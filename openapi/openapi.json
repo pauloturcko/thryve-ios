@@ -1,0 +1,3651 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Thryve API",
+    "version": "1.0.0",
+    "description": "Documentação da API do Thryve com autenticação e gerenciamento de cartões, contas bancárias, categorias e métodos de pagamento.\n\nTodo erro responde `{ code, message }` (schema `ErrorResponse`). O `code` é estável e é o que o front usa para traduzir a mensagem no idioma do usuário; o `message` é só apoio para log e debug e pode mudar.\n\nErros de validação (400, `code: VALIDATION_ERROR`) trazem também `errors: [{ path, code, message }]`, um item por campo inválido (schema `ValidationErrorResponse`). O `code` de cada item é o código nativo do Zod (`too_small`, `invalid_format`, `invalid_type`...) ou um código próprio para regras de negócio (`CARD_LIMIT_TOO_LOW`, `CARD_EXPIRED`...)."
+  },
+  "servers": [
+    {
+      "url": "https://apithryve.pauloturcko.dev",
+      "description": "Servidor de Produção"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local de Desenvolvimento"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Insira o token JWT gerado no login"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "UNAUTHORIZED",
+              "INVALID_CREDENTIALS",
+              "FORBIDDEN",
+              "VALIDATION_ERROR",
+              "INVALID_JSON",
+              "INTERNAL_ERROR",
+              "EMAIL_ALREADY_EXISTS",
+              "REGISTRATION_DISABLED",
+              "PREFERENCES_NOT_FOUND",
+              "PROFILE_PICTURE_TOO_LARGE",
+              "PROFILE_PICTURE_UPLOAD_ERROR",
+              "PROFILE_PICTURE_INVALID_IMAGE",
+              "PROFILE_PICTURE_NOT_FOUND",
+              "CARD_ALREADY_EXISTS",
+              "CARD_NOT_FOUND",
+              "CARD_LIMIT_REQUIRED",
+              "CARD_HAS_TRANSACTIONS",
+              "CARD_REQUIRED",
+              "CARD_DEBIT_ONLY",
+              "CARD_CREDIT_ONLY",
+              "BANK_ACCOUNT_ALREADY_EXISTS",
+              "BANK_ACCOUNT_NOT_FOUND",
+              "BANK_ACCOUNT_HAS_TRANSACTIONS",
+              "BANK_ACCOUNT_REQUIRED",
+              "BANK_ACCOUNT_HAS_INVESTMENTS",
+              "CATEGORY_ALREADY_EXISTS",
+              "CATEGORY_NOT_FOUND",
+              "CATEGORY_HAS_TRANSACTIONS",
+              "CATEGORY_TYPE_LOCKED",
+              "CATEGORY_MUST_BE_INCOME",
+              "CATEGORY_MUST_BE_EXPENSE",
+              "PAYMENT_METHOD_NOT_FOUND",
+              "PAYMENT_METHOD_DISABLED",
+              "INCOME_NOT_FOUND",
+              "EXPENSE_NOT_FOUND",
+              "EXPENSE_HAS_REFUNDS",
+              "INSTALLMENTS_REQUIRE_CREDIT",
+              "GOAL_ALREADY_EXISTS",
+              "GOAL_NOT_FOUND",
+              "INVESTMENT_ALREADY_EXISTS",
+              "INVESTMENT_NOT_FOUND",
+              "INVESTMENT_MOVEMENT_NOT_FOUND",
+              "INVESTMENT_NEGATIVE_BALANCE",
+              "INVESTMENT_MOVEMENT_AMOUNT_NOT_POSITIVE",
+              "INVESTMENT_VALUE_UNCHANGED",
+              "PREFIXED_RATE_REQUIRED",
+              "REPORT_NOT_FOUND",
+              "REPORT_GENERATION_FAILED",
+              "OPEN_FINANCE_NOT_CONFIGURED",
+              "OPEN_FINANCE_PROVIDER_ERROR",
+              "OPEN_FINANCE_ITEM_NOT_FOUND"
+            ],
+            "description": "Código estável do erro, para o front traduzir",
+            "example": "CARD_NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Texto de apoio para log/debug. Não é contrato",
+            "example": "Card does not exist!"
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "VALIDATION_ERROR"
+            ],
+            "example": "VALIDATION_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "example": "Validation error"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Campo inválido (vazio quando o erro é do corpo inteiro)",
+                  "example": "limit"
+                },
+                "code": {
+                  "type": "string",
+                  "description": "Código nativo do Zod ou um dos códigos próprios: NAME_WITHOUT_ALPHANUMERIC, AMOUNT_TOO_LARGE, AMOUNT_NOT_POSITIVE, AMOUNT_NEGATIVE, AMOUNT_ZERO, RATE_OUT_OF_RANGE, INVALID_PERIOD, INVALID_TIMEZONE, INVALID_DATE, CARD_LIMIT_TOO_LOW, CARD_LIMIT_REQUIRED, CARD_EXPIRED, PREFERENCES_EMPTY",
+                  "example": "CARD_LIMIT_TOO_LOW"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "O limite deve ser no mínimo 100,00"
+                }
+              }
+            }
+          }
+        }
+      },
+      "UserRegisterInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "password"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "João Silva",
+            "description": "Nome completo (mínimo de 3 caracteres)"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@email.com",
+            "description": "E-mail de acesso"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "12345678",
+            "description": "Senha (mínimo de 8 caracteres)"
+          }
+        }
+      },
+      "UserLoginInput": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@email.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "12345678"
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "João Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@email.com"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "profilePicture": {
+            "type": "string",
+            "nullable": true,
+            "description": "Caminho da foto relativo à URL da API (`new URL(profilePicture, API_URL)`). `null` = sem foto",
+            "example": "/profile-picture/0b6f1c1e-6d2a-4c47-9a39-3f1f7f0c2a10"
+          }
+        }
+      },
+      "SystemPreferencesResponse": {
+        "type": "object",
+        "properties": {
+          "theme": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "0 = dark, 1 = light",
+            "example": 0
+          },
+          "language": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "0 = português (pt-BR), 1 = inglês, 2 = espanhol",
+            "example": 0
+          },
+          "currency": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "description": "0 = BRL, 1 = USD, 2 = AUD, 3 = NZD, 4 = EUR, 5 = GBP",
+            "example": 0
+          }
+        }
+      },
+      "SystemPreferencesUpdateInput": {
+        "type": "object",
+        "description": "Envie só o que mudou, com ao menos um campo. Os valores são os mesmos de `SystemPreferencesResponse`",
+        "properties": {
+          "theme": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 1
+          },
+          "language": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "example": 1
+          },
+          "currency": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "example": 1
+          }
+        }
+      },
+      "PaymentPreferenceResponse": {
+        "type": "object",
+        "properties": {
+          "paymentMethodId": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Pix"
+          },
+          "slug": {
+            "type": "string",
+            "example": "pix"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT Bearer token, expira em 1h",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "systemPreferences": {
+            "$ref": "#/components/schemas/SystemPreferencesResponse"
+          },
+          "paymentPreferences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentPreferenceResponse"
+            }
+          }
+        }
+      },
+      "LoggedUserResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "systemPreferences": {
+            "$ref": "#/components/schemas/SystemPreferencesResponse"
+          },
+          "paymentPreferences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentPreferenceResponse"
+            }
+          }
+        }
+      },
+      "CardRegisterInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "cardType",
+          "cardFlag",
+          "expiresIn",
+          "lastFourDigits"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Cartão Nubank",
+            "description": "Apelido do cartão"
+          },
+          "cardType": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3
+            ],
+            "description": "1 = Crédito, 2 = Débito, 3 = Crédito e Débito",
+            "example": 1
+          },
+          "cardFlag": {
+            "type": "string",
+            "enum": [
+              "visa",
+              "mastercard",
+              "elo",
+              "1",
+              "2",
+              "3"
+            ],
+            "description": "Bandeira do cartão (ou código numérico)",
+            "example": "mastercard"
+          },
+          "limit": {
+            "type": "string",
+            "nullable": true,
+            "description": "Limite do cartão (mínimo 100). Aceita '5000.00' ou formato BR '5.000,00'. Obrigatório para crédito (1) e crédito e débito (3). No débito (2) é ignorado e salvo como null",
+            "example": "5000.00"
+          },
+          "expiresIn": {
+            "type": "string",
+            "description": "Validade no formato MM/YY",
+            "example": "12/28"
+          },
+          "lastFourDigits": {
+            "type": "string",
+            "description": "4 últimos dígitos do cartão",
+            "example": "1234"
+          }
+        }
+      },
+      "CardUpdateInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do cartão a ser atualizado (Obrigatório)",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Novo nome (Opcional)",
+            "example": "Cartão Inter"
+          },
+          "cardType": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3
+            ],
+            "description": "Tipo do cartão (Opcional)",
+            "example": 2
+          },
+          "cardFlag": {
+            "type": "string",
+            "description": "Bandeira (Opcional)",
+            "example": "visa"
+          },
+          "limit": {
+            "type": "string",
+            "nullable": true,
+            "description": "Novo limite (Opcional). Se o cartão ficar só débito, o limite é zerado para null. Se ficar com crédito, precisa ter limite",
+            "example": "6000.00"
+          },
+          "expiresIn": {
+            "type": "string",
+            "description": "Nova data de expiração (Opcional)",
+            "example": "05/29"
+          },
+          "lastFourDigits": {
+            "type": "string",
+            "description": "Últimos 4 dígitos (Opcional)",
+            "example": "5678"
+          }
+        }
+      },
+      "CardDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do cartão a ser removido",
+            "example": 1
+          }
+        }
+      },
+      "BankAccountRegisterInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "accountType"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Nubank",
+            "description": "Nome da conta (mínimo de 3 caracteres)"
+          },
+          "accountType": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "0 = Conta digital, 1 = Conta corrente, 2 = Poupança, 3 = Carteira digital, 4 = Dinheiro",
+            "example": 0
+          },
+          "balance": {
+            "type": "string",
+            "description": "Saldo inicial (padrão 0.00). Aceita negativo e os formatos '5000.00', '5.000,00' ou '5,000.00'",
+            "example": "1500.00"
+          }
+        }
+      },
+      "BankAccountUpdateInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID da conta a ser atualizada (Obrigatório)",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Novo nome (Opcional)",
+            "example": "Inter"
+          },
+          "accountType": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "Tipo da conta (Opcional)",
+            "example": 1
+          },
+          "balance": {
+            "type": "string",
+            "description": "Novo saldo (Opcional). Se omitido, o saldo atual é mantido",
+            "example": "2.300,50"
+          }
+        }
+      },
+      "BankAccountDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID da conta a ser removida",
+            "example": 1
+          }
+        }
+      },
+      "CategoryRegisterInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "icon",
+          "color",
+          "type"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Alimentação",
+            "description": "Nome da categoria (mínimo de 3 caracteres)"
+          },
+          "icon": {
+            "type": "string",
+            "example": "utensils",
+            "description": "Identificador do ícone (até 50 caracteres)"
+          },
+          "color": {
+            "type": "string",
+            "example": "#FF5733",
+            "description": "Cor em hexadecimal no formato #RRGGBB"
+          },
+          "type": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "0 = Receita, 1 = Despesa",
+            "example": 1
+          }
+        }
+      },
+      "CategoryUpdateInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID da categoria a ser atualizada (Obrigatório)",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Novo nome (Opcional)",
+            "example": "Mercado"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Novo ícone (Opcional)",
+            "example": "shopping-cart"
+          },
+          "color": {
+            "type": "string",
+            "description": "Nova cor (Opcional)",
+            "example": "#00AA55"
+          },
+          "type": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Tipo da categoria (Opcional)",
+            "example": 1
+          }
+        }
+      },
+      "CategoryDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID da categoria a ser removida",
+            "example": 1
+          }
+        }
+      },
+      "GoalRegisterInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "priority"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Monitor novo",
+            "description": "Nome da meta (mínimo de 3 caracteres)"
+          },
+          "targetAmount": {
+            "type": "string",
+            "nullable": true,
+            "example": "1.300,00",
+            "description": "Valor a ser atingido, maior que zero (opcional). Aceita '1300.00' ou formato BR '1.300,00'"
+          },
+          "savedAmount": {
+            "type": "string",
+            "example": "250,00",
+            "description": "Quanto já foi guardado (opcional, padrão 0)"
+          },
+          "priority": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "Urgência: 0 = Baixa, 1 = Média, 2 = Alta",
+            "example": 1
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "0 = Pendente, 1 = Finalizada, 2 = Cancelada. Se não for enviado, nasce como pendente",
+            "example": 0
+          },
+          "deadline": {
+            "type": "string",
+            "nullable": true,
+            "example": "2027-03-31",
+            "description": "Prazo para cumprir a meta (opcional), no formato AAAA-MM-DD"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": "Modelo LG 27 polegadas",
+            "description": "Observação livre (até 500 caracteres)"
+          }
+        }
+      },
+      "GoalUpdateInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID da meta (Obrigatório)",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Novo nome (Opcional)",
+            "example": "Monitor 4K"
+          },
+          "targetAmount": {
+            "type": "string",
+            "nullable": true,
+            "description": "Novo valor alvo (Opcional)",
+            "example": "1.500,00"
+          },
+          "savedAmount": {
+            "type": "string",
+            "description": "Novo valor guardado (Opcional)",
+            "example": "600,00"
+          },
+          "priority": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "Nova urgência (Opcional)",
+            "example": 2
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "Novo status (Opcional). Qualquer transição é permitida, inclusive reativar uma meta cancelada ou finalizada voltando para 0. Ao virar 1 (Finalizada), completedAt recebe a data do dia; nos outros status, fica null",
+            "example": 1
+          },
+          "deadline": {
+            "type": "string",
+            "nullable": true,
+            "description": "Novo prazo (Opcional)",
+            "example": "2027-06-30"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nova observação (Opcional)",
+            "example": null
+          }
+        }
+      },
+      "GoalDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID da meta a ser removida",
+            "example": 1
+          }
+        }
+      },
+      "InvestmentRegisterInput": {
+        "type": "object",
+        "required": [
+          "bankAccountId",
+          "name",
+          "initialAmount",
+          "date"
+        ],
+        "properties": {
+          "bankAccountId": {
+            "type": "integer",
+            "example": 1,
+            "description": "Conta (instituição) onde o investimento foi feito. O aporte inicial sai do saldo dela"
+          },
+          "name": {
+            "type": "string",
+            "example": "Tesouro Selic 2029",
+            "description": "Título do investimento (mínimo de 3 caracteres, único por usuário)"
+          },
+          "indexType": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "Indexador: 0 = Pré-fixado, 1 = Selic, 2 = CDI, 3 = IPCA, 4 = Sem indexador (renda variável, só atualização manual)",
+            "example": 1
+          },
+          "indexPercentage": {
+            "type": "string",
+            "example": "100",
+            "description": "Percentual do índice, de 0 a 1000 (opcional, padrão 100). Ex.: 110 em '110% do CDI'. Ignorado no pré-fixado e sem indexador"
+          },
+          "spreadRate": {
+            "type": "string",
+            "example": "0,10",
+            "description": "Taxa ao ano somada ao índice, em % (opcional, padrão 0, aceita negativo). Ex.: 0,10 em 'Selic + 0,10%', 6 em 'IPCA + 6%'. No pré-fixado é a taxa do título e é obrigatória (> 0)"
+          },
+          "initialAmount": {
+            "type": "string",
+            "example": "1.000,00",
+            "description": "Aporte inicial, maior que zero. Vira o primeiro lançamento (tipo 0) do investimento"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-11-14",
+            "description": "Data do aporte inicial (AAAA-MM-DD). Se for anterior ao cadastro da conta, não mexe no saldo"
+          },
+          "maturityDate": {
+            "type": "string",
+            "nullable": true,
+            "example": "2029-03-01",
+            "description": "Vencimento (opcional)"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Observação livre (até 500 caracteres)"
+          }
+        }
+      },
+      "InvestmentUpdateInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do investimento (Obrigatório)",
+            "example": 1
+          },
+          "bankAccountId": {
+            "type": "integer",
+            "description": "Nova conta (Opcional). Todos os aportes e resgates passam a contar no saldo da conta nova",
+            "example": 2
+          },
+          "name": {
+            "type": "string",
+            "description": "Novo título (Opcional)",
+            "example": "Tesouro Selic 2031"
+          },
+          "indexType": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "Novo indexador (Opcional)",
+            "example": 2
+          },
+          "indexPercentage": {
+            "type": "string",
+            "description": "Novo percentual do índice (Opcional)",
+            "example": "110"
+          },
+          "spreadRate": {
+            "type": "string",
+            "description": "Nova taxa ao ano somada ao índice (Opcional)",
+            "example": "0"
+          },
+          "maturityDate": {
+            "type": "string",
+            "nullable": true,
+            "description": "Novo vencimento (Opcional)",
+            "example": "2031-03-01"
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "0 = Ativo, 1 = Resgatado (Opcional)",
+            "example": 1
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nova observação (Opcional)",
+            "example": null
+          }
+        }
+      },
+      "InvestmentDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do investimento a ser removido",
+            "example": 1
+          }
+        }
+      },
+      "InvestmentUpdateValueInput": {
+        "type": "object",
+        "required": [
+          "investmentId",
+          "currentAmount",
+          "date"
+        ],
+        "properties": {
+          "investmentId": {
+            "type": "integer",
+            "example": 1
+          },
+          "currentAmount": {
+            "type": "string",
+            "example": "1.200,00",
+            "description": "Quanto o investimento vale hoje (pode ser 0). A diferença para o valor atual vira um lançamento de rendimento (tipo 2), positivo ou negativo"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-11-30",
+            "description": "Data do rendimento (AAAA-MM-DD)"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        }
+      },
+      "InvestmentMovementRegisterInput": {
+        "type": "object",
+        "required": [
+          "investmentId",
+          "type",
+          "amount",
+          "date"
+        ],
+        "properties": {
+          "investmentId": {
+            "type": "integer",
+            "example": 1
+          },
+          "type": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "0 = Aporte (sai da conta), 1 = Resgate (volta para a conta), 2 = Rendimento (não mexe na conta)",
+            "example": 0
+          },
+          "amount": {
+            "type": "string",
+            "example": "500,00",
+            "description": "Aporte e resgate maiores que zero; rendimento pode ser negativo, mas não zero"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-11-20",
+            "description": "AAAA-MM-DD"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        }
+      },
+      "InvestmentMovementUpdateInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do lançamento (Obrigatório)",
+            "example": 2
+          },
+          "type": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "Novo tipo (Opcional)",
+            "example": 1
+          },
+          "amount": {
+            "type": "string",
+            "description": "Novo valor (Opcional)",
+            "example": "300,00"
+          },
+          "date": {
+            "type": "string",
+            "description": "Nova data (Opcional)",
+            "example": "2026-11-21"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nova observação (Opcional)",
+            "example": null
+          }
+        }
+      },
+      "InvestmentMovementDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do lançamento a ser removido. Se era aporte ou resgate, o saldo da conta é desfeito",
+            "example": 2
+          }
+        }
+      },
+      "ReportConfigInput": {
+        "type": "object",
+        "required": [
+          "startDate",
+          "endDate",
+          "sections"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Título (opcional, até 120 caracteres). Sem ele: 'Novembro de 2026', 'Setembro a Novembro de 2026', 'Ano de 2026' ou as datas"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2026-11-01",
+            "description": "Início do período (AAAA-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2026-11-30",
+            "description": "Fim do período (AAAA-MM-DD), no máximo 5 anos depois do início"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2,
+                3
+              ]
+            },
+            "example": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "description": "Seções do PDF: 0 = Visão geral, 1 = Rendas, 2 = Gastos, 3 = Investimentos. A visão geral resume as outras escolhidas; sozinha, resume tudo"
+          },
+          "bankAccountIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "example": [],
+            "description": "Só lançamentos e investimentos dessas contas (opcional)"
+          },
+          "cardIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "example": [],
+            "description": "Só gastos desses cartões (opcional; não afeta rendas nem investimentos)"
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "example": [],
+            "description": "Só lançamentos dessas categorias (opcional)"
+          },
+          "includeTransactions": {
+            "type": "boolean",
+            "example": true,
+            "description": "Incluir as tabelas de lançamentos (padrão true). Sem elas, o PDF traz só totais e gráficos"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "America/Sao_Paulo",
+            "description": "Fuso (IANA) usado na data de emissão do cabeçalho. Padrão America/Sao_Paulo"
+          }
+        }
+      },
+      "ReportDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do relatório a ser removido do histórico",
+            "example": 1
+          }
+        }
+      },
+      "OpenFinanceConnectTokenInput": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Opcional. Id de uma conexão já salva, para o widget atualizá-la (prop updateItem)"
+          }
+        }
+      },
+      "OpenFinanceRegisterItemInput": {
+        "type": "object",
+        "required": [
+          "itemId"
+        ],
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "item.id recebido no onSuccess do Pluggy Connect"
+          }
+        }
+      },
+      "IncomeRegisterInput": {
+        "type": "object",
+        "required": [
+          "incomeKind",
+          "amount",
+          "date",
+          "categoryId",
+          "bankAccountId"
+        ],
+        "properties": {
+          "incomeKind": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "0 = Recorrente, 1 = Pontual, 2 = Reembolso",
+            "example": 1
+          },
+          "amount": {
+            "type": "string",
+            "example": "1.500,00",
+            "description": "Valor maior que zero. Aceita formato BR (1.500,00) e US (1,500.00)"
+          },
+          "date": {
+            "type": "string",
+            "example": "2027-01-05",
+            "description": "Data prevista ou de recebimento, no formato AAAA-MM-DD"
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "0 = Pendente, 1 = Pago. Se não for enviado, nasce como pendente. Só lançamento pago altera o saldo da conta",
+            "example": 0
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "ID de uma categoria de receita do usuário",
+            "example": 1
+          },
+          "bankAccountId": {
+            "type": "integer",
+            "description": "ID da conta do usuário onde o valor entra",
+            "example": 1
+          },
+          "source": {
+            "type": "string",
+            "nullable": true,
+            "example": "Empresa X",
+            "description": "Origem da receita, em texto livre (até 100 caracteres)"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": "Salário de janeiro",
+            "description": "Observação livre (até 500 caracteres)"
+          },
+          "linkedTransactionId": {
+            "type": "integer",
+            "nullable": true,
+            "example": 10,
+            "description": "ID do gasto ao qual o reembolso se refere"
+          }
+        }
+      },
+      "IncomeUpdateInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID da receita a ser atualizada (Obrigatório)",
+            "example": 1
+          },
+          "incomeKind": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "description": "Novo tipo de receita (Opcional)",
+            "example": 1
+          },
+          "amount": {
+            "type": "string",
+            "description": "Novo valor (Opcional)",
+            "example": "1.800,00"
+          },
+          "date": {
+            "type": "string",
+            "description": "Nova data, no formato AAAA-MM-DD (Opcional)",
+            "example": "2027-01-08"
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Novo status (Opcional). Mudar para pago soma no saldo; voltar para pendente desfaz",
+            "example": 1
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "Nova categoria de receita (Opcional)",
+            "example": 2
+          },
+          "bankAccountId": {
+            "type": "integer",
+            "description": "Nova conta (Opcional). Se a receita for paga, o valor sai da conta antiga e entra na nova",
+            "example": 2
+          },
+          "source": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nova origem (Opcional)",
+            "example": "Empresa Y"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nova observação (Opcional)",
+            "example": "Recebido com 3 dias de atraso"
+          },
+          "linkedTransactionId": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Novo gasto vinculado (Opcional)",
+            "example": 10
+          }
+        }
+      },
+      "IncomeDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID da receita a ser removida",
+            "example": 1
+          }
+        }
+      },
+      "ExpenseRegisterInput": {
+        "type": "object",
+        "required": [
+          "expenseKind",
+          "categoryId",
+          "description",
+          "paymentMethodId",
+          "bankAccountId",
+          "amount",
+          "date"
+        ],
+        "properties": {
+          "expenseKind": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "0 = Fixo, 1 = Variável",
+            "example": 1
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "ID de uma categoria de gasto do usuário",
+            "example": 2
+          },
+          "description": {
+            "type": "string",
+            "example": "Conta de luz",
+            "description": "O que é o gasto, mais específico que a categoria (até 150 caracteres)"
+          },
+          "paymentMethodId": {
+            "type": "integer",
+            "description": "ID de uma forma de pagamento ativa nas preferências do usuário",
+            "example": 5
+          },
+          "bankAccountId": {
+            "type": "integer",
+            "description": "ID da conta do usuário de onde o valor sai",
+            "example": 1
+          },
+          "cardId": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID do cartão do usuário. Obrigatório quando a forma de pagamento é crédito ou débito",
+            "example": 1
+          },
+          "amount": {
+            "type": "string",
+            "example": "1.200,00",
+            "description": "Valor total, maior que zero. No parcelado, é dividido entre as parcelas"
+          },
+          "date": {
+            "type": "string",
+            "example": "2027-01-10",
+            "description": "Data prevista ou de pagamento, no formato AAAA-MM-DD. No parcelado, é a data da primeira parcela"
+          },
+          "dueDate": {
+            "type": "string",
+            "nullable": true,
+            "example": "2027-01-15",
+            "description": "Data de vencimento (opcional), no formato AAAA-MM-DD"
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "0 = Pendente, 1 = Pago. Se não for enviado, nasce como pendente. No parcelado, vale só para a primeira parcela",
+            "example": 0
+          },
+          "installments": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 48,
+            "description": "Número de parcelas (opcional; omitir = à vista). Só é aceito com a forma de pagamento cartão de crédito. Gera um gasto por mês, a partir da data informada",
+            "example": 3
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": "Dividido com a Ana",
+            "description": "Observação livre (até 500 caracteres)"
+          }
+        }
+      },
+      "ExpenseUpdateInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do gasto a ser atualizado (Obrigatório). No parcelado, altera só essa parcela",
+            "example": 1
+          },
+          "expenseKind": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Novo tipo (Opcional)",
+            "example": 0
+          },
+          "categoryId": {
+            "type": "integer",
+            "description": "Nova categoria de gasto (Opcional)",
+            "example": 3
+          },
+          "description": {
+            "type": "string",
+            "description": "Nova descrição (Opcional)",
+            "example": "Internet"
+          },
+          "paymentMethodId": {
+            "type": "integer",
+            "description": "Nova forma de pagamento (Opcional)",
+            "example": 1
+          },
+          "bankAccountId": {
+            "type": "integer",
+            "description": "Nova conta (Opcional). Se o gasto for pago, o valor volta para a conta antiga e sai da nova",
+            "example": 2
+          },
+          "cardId": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Novo cartão (Opcional)",
+            "example": 2
+          },
+          "amount": {
+            "type": "string",
+            "description": "Novo valor desta parcela (Opcional)",
+            "example": "400,00"
+          },
+          "date": {
+            "type": "string",
+            "description": "Nova data, no formato AAAA-MM-DD (Opcional)",
+            "example": "2027-01-12"
+          },
+          "dueDate": {
+            "type": "string",
+            "nullable": true,
+            "description": "Novo vencimento (Opcional)",
+            "example": "2027-01-20"
+          },
+          "status": {
+            "type": "integer",
+            "enum": [
+              0,
+              1
+            ],
+            "description": "Novo status (Opcional). Mudar para pago subtrai do saldo; voltar para pendente desfaz",
+            "example": 1
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nova observação (Opcional)",
+            "example": "Pago com atraso"
+          }
+        }
+      },
+      "ExpenseDeleteInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID do gasto a ser removido. No parcelado, remove só essa parcela",
+            "example": 1
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/users/register": {
+      "post": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Cadastrar um novo usuário",
+        "description": "Cadastro fechado ao público. Envie no header x-registration-key a chave definida em REGISTRATION_KEY.",
+        "parameters": [
+          {
+            "name": "x-registration-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário cadastrado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação nos dados enviados"
+          },
+          "403": {
+            "description": "Cadastro desativado ou chave de cadastro inválida"
+          },
+          "409": {
+            "description": "E-mail já cadastrado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Autenticar usuário e obter Token JWT",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login efetuado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados de requisição inválidos"
+          },
+          "401": {
+            "description": "Credenciais inválidas / Não autorizado"
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Obter informações do usuário autenticado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do usuário logado, com preferências de sistema e de pagamento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoggedUserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido ou não fornecido"
+          }
+        }
+      }
+    },
+    "/system-preferences/update": {
+      "patch": {
+        "tags": [
+          "Preferências do Sistema"
+        ],
+        "summary": "Alterar tema, idioma e/ou moeda do usuário logado",
+        "description": "Só troca entre as opções existentes; idiomas e moedas não são criados nem removidos pelo usuário.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemPreferencesUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preferências atualizadas. Devolve `{ systemPreferences }` completo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "systemPreferences": {
+                      "$ref": "#/components/schemas/SystemPreferencesResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Valor fora das opções ou nenhum campo enviado"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "404": {
+            "description": "Preferências do usuário não encontradas"
+          }
+        }
+      }
+    },
+    "/profile-picture/upload": {
+      "post": {
+        "tags": [
+          "Foto de Perfil"
+        ],
+        "summary": "Enviar ou trocar a foto de perfil do usuário logado",
+        "description": "Recebe JPG, PNG ou WebP de até 5MB. A API recorta em 512x512, converte para WebP e descarta os metadados (EXIF/GPS). Cada envio gera uma URL nova; a anterior deixa de existir.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Foto salva. Devolve `{ profilePicture }`, o mesmo valor que passa a vir em `user.profilePicture`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profilePicture": {
+                      "type": "string",
+                      "example": "/profile-picture/0b6f1c1e-6d2a-4c47-9a39-3f1f7f0c2a10"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Arquivo ausente ou enviado em outro campo que não `file`"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "413": {
+            "description": "Arquivo maior que 5MB"
+          },
+          "422": {
+            "description": "O arquivo não é uma imagem JPG, PNG ou WebP válida"
+          }
+        }
+      }
+    },
+    "/profile-picture/delete": {
+      "delete": {
+        "tags": [
+          "Foto de Perfil"
+        ],
+        "summary": "Remover a foto de perfil do usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Foto removida (ou o usuário já não tinha foto). `user.profilePicture` passa a ser `null`"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/profile-picture/{id}": {
+      "get": {
+        "tags": [
+          "Foto de Perfil"
+        ],
+        "summary": "Obter a imagem da foto de perfil",
+        "description": "Rota pública, para funcionar direto em `<img src>`, que não envia o header Authorization. O id é um UUID aleatório, então não dá para descobrir a foto de outros usuários. Resposta com cache de 1 ano.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Imagem WebP",
+            "content": {
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "id não é um UUID"
+          },
+          "404": {
+            "description": "Foto não encontrada (removida ou substituída)"
+          }
+        }
+      }
+    },
+    "/cards/register": {
+      "post": {
+        "tags": [
+          "Cartões"
+        ],
+        "summary": "Cadastrar um novo cartão para o usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cartão registrado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação nos campos do cartão"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "409": {
+            "description": "Conflito / Cartão já existente"
+          }
+        }
+      }
+    },
+    "/cards/user-cards": {
+      "get": {
+        "tags": [
+          "Cartões"
+        ],
+        "summary": "Listar todos os cartões do usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de cartões retornada com sucesso"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/cards/update": {
+      "patch": {
+        "tags": [
+          "Cartões"
+        ],
+        "summary": "Atualizar dados de um cartão",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cartão atualizado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O cartão pertence a outro usuário"
+          },
+          "404": {
+            "description": "Cartão não encontrado"
+          },
+          "409": {
+            "description": "Já existe um cartão com o mesmo nome e últimos 4 dígitos"
+          }
+        }
+      }
+    },
+    "/cards/delete": {
+      "delete": {
+        "tags": [
+          "Cartões"
+        ],
+        "summary": "Remover um cartão",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cartão excluído com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O cartão pertence a outro usuário"
+          },
+          "404": {
+            "description": "Cartão não encontrado"
+          }
+        }
+      }
+    },
+    "/payment-method/list": {
+      "get": {
+        "tags": [
+          "Formas de Pagamento"
+        ],
+        "summary": "Listar preferências de pagamento do usuário",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de preferências de pagamento"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/payment-method/{id}/update-preferences": {
+      "patch": {
+        "tags": [
+          "Formas de Pagamento"
+        ],
+        "summary": "Ativar/desativar preferência de forma de pagamento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do método de pagamento",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status da preferência atualizado com sucesso"
+          },
+          "400": {
+            "description": "Parâmetro inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "404": {
+            "description": "Método de pagamento não encontrado"
+          }
+        }
+      }
+    },
+    "/bank-accounts/register": {
+      "post": {
+        "tags": [
+          "Contas Bancárias"
+        ],
+        "summary": "Cadastrar uma nova conta bancária para o usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankAccountRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conta bancária registrada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação nos campos da conta"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "409": {
+            "description": "Já existe uma conta com o mesmo nome e tipo"
+          }
+        }
+      }
+    },
+    "/bank-accounts/user-bank-accounts": {
+      "get": {
+        "tags": [
+          "Contas Bancárias"
+        ],
+        "summary": "Listar todas as contas bancárias do usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de contas bancárias retornada com sucesso"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/bank-accounts/update": {
+      "patch": {
+        "tags": [
+          "Contas Bancárias"
+        ],
+        "summary": "Atualizar dados de uma conta bancária",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankAccountUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conta bancária atualizada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A conta pertence a outro usuário"
+          },
+          "404": {
+            "description": "Conta bancária não encontrada"
+          },
+          "409": {
+            "description": "Já existe uma conta com o mesmo nome e tipo"
+          }
+        }
+      }
+    },
+    "/bank-accounts/delete": {
+      "delete": {
+        "tags": [
+          "Contas Bancárias"
+        ],
+        "summary": "Remover uma conta bancária",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankAccountDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conta bancária excluída com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A conta pertence a outro usuário"
+          },
+          "404": {
+            "description": "Conta bancária não encontrada"
+          }
+        }
+      }
+    },
+    "/categories/register": {
+      "post": {
+        "tags": [
+          "Categorias"
+        ],
+        "summary": "Cadastrar uma nova categoria para o usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Categoria registrada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação nos campos da categoria"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "409": {
+            "description": "Já existe uma categoria com o mesmo nome"
+          }
+        }
+      }
+    },
+    "/categories/user-categories": {
+      "get": {
+        "tags": [
+          "Categorias"
+        ],
+        "summary": "Listar todas as categorias do usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de categorias retornada com sucesso"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/categories/update": {
+      "patch": {
+        "tags": [
+          "Categorias"
+        ],
+        "summary": "Atualizar dados de uma categoria",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Categoria atualizada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A categoria pertence a outro usuário"
+          },
+          "404": {
+            "description": "Categoria não encontrada"
+          },
+          "409": {
+            "description": "Já existe uma categoria com o mesmo nome"
+          }
+        }
+      }
+    },
+    "/categories/delete": {
+      "delete": {
+        "tags": [
+          "Categorias"
+        ],
+        "summary": "Remover uma categoria",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Categoria excluída com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A categoria pertence a outro usuário"
+          },
+          "404": {
+            "description": "Categoria não encontrada"
+          }
+        }
+      }
+    },
+    "/goals/register": {
+      "post": {
+        "tags": [
+          "Metas"
+        ],
+        "summary": "Cadastrar uma nova meta para o usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Meta registrada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação nos campos da meta"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "409": {
+            "description": "Já existe uma meta com o mesmo nome (GOAL_ALREADY_EXISTS)"
+          }
+        }
+      }
+    },
+    "/goals/user-goals": {
+      "get": {
+        "tags": [
+          "Metas"
+        ],
+        "summary": "Listar as metas do usuário logado",
+        "description": "Ordenadas por status (pendentes primeiro), urgência (alta primeiro), prazo (sem prazo por último) e data de criação",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2
+              ]
+            },
+            "description": "0 = Pendente, 1 = Finalizada, 2 = Cancelada"
+          },
+          {
+            "in": "query",
+            "name": "priority",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2
+              ]
+            },
+            "description": "0 = Baixa, 1 = Média, 2 = Alta"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de metas retornada com sucesso"
+          },
+          "400": {
+            "description": "Filtro inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/goals/update": {
+      "patch": {
+        "tags": [
+          "Metas"
+        ],
+        "summary": "Atualizar dados de uma meta",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Meta atualizada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A meta pertence a outro usuário"
+          },
+          "404": {
+            "description": "Meta não encontrada (GOAL_NOT_FOUND)"
+          },
+          "409": {
+            "description": "Já existe uma meta com o mesmo nome (GOAL_ALREADY_EXISTS)"
+          }
+        }
+      }
+    },
+    "/goals/delete": {
+      "delete": {
+        "tags": [
+          "Metas"
+        ],
+        "summary": "Remover uma meta",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Meta excluída com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A meta pertence a outro usuário"
+          },
+          "404": {
+            "description": "Meta não encontrada (GOAL_NOT_FOUND)"
+          }
+        }
+      }
+    },
+    "/investments/register": {
+      "post": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Cadastrar um investimento com o aporte inicial",
+        "description": "Cria o investimento e um lançamento de aporte (tipo 0) com o initialAmount, descontando o valor do saldo da conta",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestmentRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Investimento registrado com sucesso (com os valores calculados)"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A conta pertence a outro usuário"
+          },
+          "404": {
+            "description": "Conta não encontrada (BANK_ACCOUNT_NOT_FOUND)"
+          },
+          "409": {
+            "description": "Já existe um investimento com o mesmo nome (INVESTMENT_ALREADY_EXISTS)"
+          },
+          "422": {
+            "description": "Pré-fixado sem taxa (PREFIXED_RATE_REQUIRED)"
+          }
+        }
+      }
+    },
+    "/investments/user-investments": {
+      "get": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Listar os investimentos do usuário logado, com os valores calculados",
+        "description": "Cada item traz, calculados a partir dos lançamentos: startDate (data do primeiro lançamento), initialAmount (primeiro aporte), investedAmount (aportes - resgates), yieldAmount (soma dos rendimentos), yieldPercentage (rendimento / total aportado * 100), currentAmount (investido + rendimentos) e monthYield (rendimentos do mês do filtro `month`, ou do mês atual).\n\nProjeção pelas taxas do Banco Central (valor bruto, sem IR, IOF nem custódia): estimatedAmount (valor estimado para hoje, partindo do último valor confirmado via update-value e corrigindo cada aporte ou resgate posterior desde a data dele), estimatedYield (estimatedAmount - currentAmount), currentAnnualRate (taxa efetiva ao ano hoje, em %; null sem indexador) e ratesUpdatedUntil (último dia, ou mês no IPCA, publicado pelo BC; dias e meses ainda não publicados repetem a última taxa). As taxas são sincronizadas com o BC no máximo a cada 6 horas; se o BC estiver fora, usa as já salvas",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-11"
+            },
+            "description": "Mês usado no monthYield (AAAA-MM). Padrão: mês atual"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "0 = Ativo, 1 = Resgatado"
+          },
+          {
+            "in": "query",
+            "name": "bankAccountId",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filtra pela conta (instituição)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de investimentos retornada com sucesso"
+          },
+          "400": {
+            "description": "Filtro inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/investments/update": {
+      "patch": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Atualizar dados de um investimento",
+        "description": "Valores não se editam aqui: use os lançamentos ou o /investments/update-value",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestmentUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Investimento atualizado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O investimento ou a conta pertencem a outro usuário"
+          },
+          "404": {
+            "description": "Investimento (INVESTMENT_NOT_FOUND) ou conta (BANK_ACCOUNT_NOT_FOUND) não encontrados"
+          },
+          "409": {
+            "description": "Já existe um investimento com o mesmo nome (INVESTMENT_ALREADY_EXISTS)"
+          },
+          "422": {
+            "description": "Pré-fixado sem taxa (PREFIXED_RATE_REQUIRED)"
+          }
+        }
+      }
+    },
+    "/investments/delete": {
+      "delete": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Remover um investimento e todos os lançamentos dele",
+        "description": "Desfaz no saldo da conta todos os aportes e resgates, como se o investimento nunca tivesse existido",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestmentDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Investimento excluído com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O investimento pertence a outro usuário"
+          },
+          "404": {
+            "description": "Investimento não encontrado (INVESTMENT_NOT_FOUND)"
+          }
+        }
+      }
+    },
+    "/investments/update-value": {
+      "post": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Informar quanto o investimento vale hoje",
+        "description": "Calcula a diferença para o valor atual e grava como rendimento (tipo 2). Não mexe no saldo da conta",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestmentUpdateValueInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Rendimento registrado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O investimento pertence a outro usuário"
+          },
+          "404": {
+            "description": "Investimento não encontrado (INVESTMENT_NOT_FOUND)"
+          },
+          "422": {
+            "description": "O valor informado é igual ao atual (INVESTMENT_VALUE_UNCHANGED)"
+          }
+        }
+      }
+    },
+    "/investments/movements/register": {
+      "post": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Registrar um aporte, resgate ou rendimento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestmentMovementRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Lançamento registrado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O investimento pertence a outro usuário"
+          },
+          "404": {
+            "description": "Investimento não encontrado (INVESTMENT_NOT_FOUND)"
+          },
+          "422": {
+            "description": "O investimento ficaria com valor negativo (INVESTMENT_NEGATIVE_BALANCE)"
+          }
+        }
+      }
+    },
+    "/investments/movements": {
+      "get": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Listar os lançamentos de investimento do usuário logado",
+        "description": "Ordenados do mais recente para o mais antigo",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "investmentId",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Só os lançamentos desse investimento"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2
+              ]
+            },
+            "description": "0 = Aporte, 1 = Resgate, 2 = Rendimento"
+          },
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-11"
+            },
+            "description": "Mês (AAAA-MM)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de lançamentos retornada com sucesso"
+          },
+          "400": {
+            "description": "Filtro inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O investimento pertence a outro usuário"
+          },
+          "404": {
+            "description": "Investimento não encontrado (INVESTMENT_NOT_FOUND)"
+          }
+        }
+      }
+    },
+    "/investments/movements/update": {
+      "patch": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Atualizar um lançamento de investimento",
+        "description": "O efeito antigo no saldo da conta é desfeito e o novo é aplicado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestmentMovementUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lançamento atualizado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O lançamento pertence a outro usuário"
+          },
+          "404": {
+            "description": "Lançamento não encontrado (INVESTMENT_MOVEMENT_NOT_FOUND)"
+          },
+          "422": {
+            "description": "Valor negativo em aporte ou resgate (INVESTMENT_MOVEMENT_AMOUNT_NOT_POSITIVE) ou investimento ficaria negativo (INVESTMENT_NEGATIVE_BALANCE)"
+          }
+        }
+      }
+    },
+    "/investments/movements/delete": {
+      "delete": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Remover um lançamento de investimento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestmentMovementDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lançamento excluído com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O lançamento pertence a outro usuário"
+          },
+          "404": {
+            "description": "Lançamento não encontrado (INVESTMENT_MOVEMENT_NOT_FOUND)"
+          },
+          "422": {
+            "description": "O investimento ficaria com valor negativo (INVESTMENT_NEGATIVE_BALANCE)"
+          }
+        }
+      }
+    },
+    "/indexes/current": {
+      "get": {
+        "tags": [
+          "Investimentos"
+        ],
+        "summary": "Taxas mais recentes de Selic, CDI e IPCA (Banco Central)",
+        "description": "selic e cdi: { date, dailyRate (% ao dia), annualRate (% a.a., base 252) }. ipca: { month (AAAA-MM), monthlyRate (%), last12MonthsRate (% acumulado em 12 meses) }. Qualquer um vem null se o BC nunca respondeu. Serve para a prévia da taxa no formulário de investimento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Taxas retornadas com sucesso"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/reports/preview": {
+      "post": {
+        "tags": [
+          "Relatórios"
+        ],
+        "summary": "Gerar a prévia do relatório em PDF, sem salvar no histórico",
+        "description": "Responde o próprio PDF (application/pdf, inline). O front exibe num iframe enquanto o usuário ajusta os filtros",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportConfigInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF da prévia",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro de validação (INVALID_PERIOD, INVALID_TIMEZONE...)"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "404": {
+            "description": "Filtro com conta (BANK_ACCOUNT_NOT_FOUND), cartão (CARD_NOT_FOUND) ou categoria (CATEGORY_NOT_FOUND) que não existe ou é de outro usuário"
+          },
+          "500": {
+            "description": "Falha ao gerar o PDF (REPORT_GENERATION_FAILED)"
+          }
+        }
+      }
+    },
+    "/reports/generate": {
+      "post": {
+        "tags": [
+          "Relatórios"
+        ],
+        "summary": "Gerar o relatório e salvar no histórico",
+        "description": "Responde os dados do relatório salvo (sem o arquivo). O PDF é baixado depois em /reports/{id}/download",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportConfigInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Relatório gerado e salvo"
+          },
+          "400": {
+            "description": "Erro de validação (INVALID_PERIOD, INVALID_TIMEZONE...)"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "404": {
+            "description": "Filtro com conta (BANK_ACCOUNT_NOT_FOUND), cartão (CARD_NOT_FOUND) ou categoria (CATEGORY_NOT_FOUND) que não existe ou é de outro usuário"
+          },
+          "500": {
+            "description": "Falha ao gerar o PDF (REPORT_GENERATION_FAILED)"
+          }
+        }
+      }
+    },
+    "/reports/user-reports": {
+      "get": {
+        "tags": [
+          "Relatórios"
+        ],
+        "summary": "Histórico de relatórios do usuário logado (mais recentes primeiro)",
+        "description": "Cada item: id, title, startDate, endDate, filters (seções e filtros usados), fileName, fileSize (bytes) e createdAt. Não traz o PDF",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Histórico retornado com sucesso"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/reports/{id}/download": {
+      "get": {
+        "tags": [
+          "Relatórios"
+        ],
+        "summary": "Baixar o PDF de um relatório do histórico",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF (attachment, com o nome do arquivo em Content-Disposition)",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O relatório pertence a outro usuário"
+          },
+          "404": {
+            "description": "Relatório não encontrado (REPORT_NOT_FOUND)"
+          }
+        }
+      }
+    },
+    "/reports/delete": {
+      "delete": {
+        "tags": [
+          "Relatórios"
+        ],
+        "summary": "Remover um relatório do histórico",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Relatório excluído com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O relatório pertence a outro usuário"
+          },
+          "404": {
+            "description": "Relatório não encontrado (REPORT_NOT_FOUND)"
+          }
+        }
+      }
+    },
+    "/open-finance/connect-token": {
+      "post": {
+        "tags": [
+          "Open Finance"
+        ],
+        "summary": "Gerar o Connect Token para abrir o widget Pluggy Connect",
+        "description": "Responde { accessToken }, válido por 30 minutos. O clientUserId enviado ao Pluggy é o id do usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenFinanceConnectTokenInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token gerado"
+          },
+          "400": {
+            "description": "itemId inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A conexão pertence a outro usuário"
+          },
+          "404": {
+            "description": "Conexão não encontrada (OPEN_FINANCE_ITEM_NOT_FOUND)"
+          },
+          "500": {
+            "description": "Credenciais do Pluggy não configuradas (OPEN_FINANCE_NOT_CONFIGURED) ou falha no Pluggy (OPEN_FINANCE_PROVIDER_ERROR)"
+          }
+        }
+      }
+    },
+    "/open-finance/items/register": {
+      "post": {
+        "tags": [
+          "Open Finance"
+        ],
+        "summary": "Salvar a conexão criada pelo widget (onSuccess)",
+        "description": "Busca o Item no Pluggy e só salva se ele foi criado com um token deste usuário. Salvar o mesmo itemId de novo atualiza o registro",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenFinanceRegisterItemInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conexão salva"
+          },
+          "400": {
+            "description": "itemId ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O Item foi criado para outro usuário"
+          },
+          "404": {
+            "description": "Item não existe no Pluggy (OPEN_FINANCE_ITEM_NOT_FOUND)"
+          },
+          "500": {
+            "description": "OPEN_FINANCE_NOT_CONFIGURED ou OPEN_FINANCE_PROVIDER_ERROR"
+          }
+        }
+      }
+    },
+    "/open-finance/webhooks/pluggy": {
+      "post": {
+        "tags": [
+          "Open Finance"
+        ],
+        "summary": "Receber webhooks do Pluggy (chamado pelo Pluggy, não pelo front)",
+        "description": "Rota pública, autenticada pela assinatura X-Pluggy-Signature (HMAC-SHA256 de \"<t>.<corpo bruto>\" com PLUGGY_WEBHOOK_SECRET; timestamp com até 5 min). Responde 2XX na hora e processa depois. Eventos repetidos (mesmo eventId) são ignorados. Tratados: item/created, item/updated, item/login_succeeded e item/error (sincroniza a conexão com o Pluggy) e item/deleted (remove a conexão). Os demais ficam só registrados em pluggy_webhook_events",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Pluggy-Signature",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "t=1795280000,v1=<hmac hex>"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "event",
+                  "eventId"
+                ],
+                "properties": {
+                  "event": {
+                    "type": "string",
+                    "example": "item/updated"
+                  },
+                  "eventId": {
+                    "type": "string",
+                    "example": "e3b0c442-98fc-4c14-9afb-f4c8996fb924"
+                  },
+                  "itemId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "triggeredBy": {
+                    "type": "string",
+                    "example": "SYNC"
+                  },
+                  "clientUserId": {
+                    "type": "string",
+                    "example": "1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evento aceito ({ received: true }), repetido ({ received: true, duplicate: true }) ou descartado por PLUGGY_WEBHOOK_SECRET não configurado ({ received: false, reason })"
+          },
+          "400": {
+            "description": "Corpo não é JSON válido ou faltam event/eventId (o Pluggy não reenvia)"
+          },
+          "401": {
+            "description": "Assinatura ausente, inválida ou expirada (o Pluggy não reenvia)"
+          },
+          "500": {
+            "description": "Falha ao registrar o evento (o Pluggy reenvia)"
+          }
+        }
+      }
+    },
+    "/open-finance/items/user-items": {
+      "get": {
+        "tags": [
+          "Open Finance"
+        ],
+        "summary": "Listar as conexões Open Finance do usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de conexões (itemId, connectorName, connectorImageUrl, status, createdAt)"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/incomes/register": {
+      "post": {
+        "tags": [
+          "Receitas"
+        ],
+        "summary": "Cadastrar uma nova receita para o usuário logado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncomeRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Receita registrada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação nos campos da receita"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A conta, a categoria ou o gasto vinculado pertence a outro usuário"
+          },
+          "404": {
+            "description": "Conta, categoria ou gasto vinculado não encontrado"
+          },
+          "422": {
+            "description": "O usuário não tem conta cadastrada, ou a categoria não é de receita"
+          }
+        }
+      }
+    },
+    "/incomes/user-incomes": {
+      "get": {
+        "tags": [
+          "Receitas"
+        ],
+        "summary": "Listar as receitas do usuário logado, com a conta e a categoria de cada uma",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2027-01"
+            },
+            "description": "Mês no formato AAAA-MM"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "0 = Pendente, 1 = Pago"
+          },
+          {
+            "name": "incomeKind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2
+              ]
+            },
+            "description": "0 = Recorrente, 1 = Pontual, 2 = Reembolso"
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID da categoria"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de receitas retornada com sucesso, da data mais recente para a mais antiga"
+          },
+          "400": {
+            "description": "Filtro inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/incomes/update": {
+      "patch": {
+        "tags": [
+          "Receitas"
+        ],
+        "summary": "Atualizar dados de uma receita",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncomeUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Receita atualizada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A receita, a conta ou a categoria pertence a outro usuário"
+          },
+          "404": {
+            "description": "Receita, conta ou categoria não encontrada"
+          },
+          "422": {
+            "description": "A categoria não é de receita"
+          }
+        }
+      }
+    },
+    "/incomes/delete": {
+      "delete": {
+        "tags": [
+          "Receitas"
+        ],
+        "summary": "Remover uma receita. Se ela estava paga, o valor sai do saldo da conta",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncomeDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Receita excluída com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A receita pertence a outro usuário"
+          },
+          "404": {
+            "description": "Receita não encontrada"
+          }
+        }
+      }
+    },
+    "/expenses/register": {
+      "post": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Cadastrar um gasto. Se for parcelado, gera um gasto por mês e devolve a lista",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpenseRegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Gasto registrado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação nos campos do gasto"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "A conta, a categoria ou o cartão pertence a outro usuário"
+          },
+          "404": {
+            "description": "Conta, categoria, forma de pagamento ou cartão não encontrado"
+          },
+          "422": {
+            "description": "Sem conta cadastrada, categoria que não é de gasto, forma de pagamento desativada ou cartão ausente no crédito/débito"
+          }
+        }
+      }
+    },
+    "/expenses/user-expenses": {
+      "get": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Listar os gastos do usuário logado, com conta, categoria, forma de pagamento e cartão",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2027-01"
+            },
+            "description": "Mês no formato AAAA-MM"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "0 = Pendente, 1 = Pago"
+          },
+          {
+            "name": "expenseKind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "0 = Fixo, 1 = Variável"
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID da categoria"
+          },
+          {
+            "name": "paymentMethodId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID da forma de pagamento"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de gastos retornada com sucesso, da data mais recente para a mais antiga"
+          },
+          "400": {
+            "description": "Filtro inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
+      }
+    },
+    "/expenses/update": {
+      "patch": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Atualizar um gasto (no parcelado, uma parcela por vez)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpenseUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gasto atualizado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O gasto, a conta, a categoria ou o cartão pertence a outro usuário"
+          },
+          "404": {
+            "description": "Gasto, conta, categoria, forma de pagamento ou cartão não encontrado"
+          },
+          "422": {
+            "description": "Categoria que não é de gasto, forma de pagamento desativada ou cartão ausente no crédito/débito"
+          }
+        }
+      }
+    },
+    "/expenses/delete": {
+      "delete": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Remover um gasto (no parcelado, uma parcela). Se ele estava pago, o valor volta para a conta",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpenseDeleteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gasto excluído com sucesso"
+          },
+          "400": {
+            "description": "ID ausente ou inválido"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "O gasto pertence a outro usuário"
+          },
+          "404": {
+            "description": "Gasto não encontrado"
+          },
+          "409": {
+            "description": "O gasto tem reembolsos vinculados"
+          }
+        }
+      }
+    }
+  }
+}
