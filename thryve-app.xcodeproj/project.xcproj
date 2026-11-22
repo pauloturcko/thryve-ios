@@ -17,6 +17,12 @@
       "version": {
         "up-to-next-major-version": "1.13.4",
       },
+    }, {
+      "kind": "remote",
+      "repository": "https://github.com/apple/swift-openapi-urlsession",
+      "version": {
+        "up-to-next-major-version": "1.0.0",
+      },
     },
   ],
   "files": [
@@ -44,6 +50,10 @@
         {
           "package": "swift-openapi-runtime",
           "product-name": "OpenAPIRuntime",
+          "build-phase": { "build-phase": "frameworks" },
+        }, {
+          "package": "swift-openapi-urlsession",
+          "product-name": "OpenAPIURLSession",
           "build-phase": { "build-phase": "frameworks" },
         },
       ],
