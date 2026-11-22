@@ -22,7 +22,6 @@ struct LoginView: View {
             Spacer()
 
             VStack(spacing: 12) {
-                // Asset em modo template: pega a cor do texto e acompanha o tema claro/escuro.
                 Image("ThryveLogo")
                     .resizable()
                     .scaledToFit()
@@ -70,8 +69,7 @@ struct LoginView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(PrimaryButtonStyle())
                 .disabled(!canSubmit)
             }
 
@@ -95,6 +93,25 @@ struct LoginView: View {
                 errorMessage = (error as? LoginError ?? .unexpected).errorDescription
             }
         }
+    }
+}
+
+private struct PrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body.weight(.semibold))
+            .foregroundStyle(isEnabled ? Color(.systemBackground) : Color.secondary)
+            .tint(Color(.systemBackground))
+            .frame(minHeight: 52)
+            .background(
+                isEnabled ? AnyShapeStyle(.primary) : AnyShapeStyle(.fill.tertiary),
+                in: Capsule()
+            )
+            .opacity(configuration.isPressed ? 0.8 : 1)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
