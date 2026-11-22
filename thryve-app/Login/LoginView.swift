@@ -23,7 +23,7 @@ struct LoginView: View {
 
             VStack(spacing: 12) {
                 // Asset em modo template: pega a cor do texto e acompanha o tema claro/escuro.
-                Image(.thryveLogo)
+                Image("ThryveLogo")
                     .resizable()
                     .scaledToFit()
                     .frame(height: 44)
