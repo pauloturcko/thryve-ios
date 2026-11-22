@@ -1,7 +1,6 @@
 import Foundation
 import Security
 
-/// Guarda o JWT no Keychain. Só pode ser lido com o aparelho desbloqueado e não vai para backups de outro aparelho.
 struct TokenStore: Sendable {
     private let service = "com.pauloturcko.thryve-app"
     private let account = "access-token"

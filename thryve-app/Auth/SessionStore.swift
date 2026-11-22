@@ -37,8 +37,6 @@ enum LoginError: LocalizedError {
     }
 }
 
-/// Estado de autenticação do app. Ainda não há refresh token na API: quando o JWT (1h) vence,
-/// a próxima chamada responde 401 e a sessão volta para o login.
 @MainActor
 @Observable
 final class SessionStore {
@@ -46,7 +44,6 @@ final class SessionStore {
         case restoring
         case signedOut
         case signedIn(AuthenticatedUser)
-        /// Havia token salvo, mas a API não respondeu: não dá para saber se ele ainda vale.
         case restoreFailed
     }
 

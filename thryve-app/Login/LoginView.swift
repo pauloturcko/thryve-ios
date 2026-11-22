@@ -21,13 +21,18 @@ struct LoginView: View {
         VStack(alignment: .leading, spacing: 32) {
             Spacer()
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Thryve")
-                    .font(.largeTitle.weight(.semibold))
+            VStack(spacing: 12) {
+                Image("ThryveLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 44)
+                    .foregroundStyle(.primary)
+                    .accessibilityLabel("Thryve")
                 Text("Fale o que gastou. A Thryve anota.")
                     .font(.body)
                     .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity)
 
             VStack(spacing: 12) {
                 TextField("E-mail", text: $email)
@@ -64,8 +69,7 @@ struct LoginView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(PrimaryButtonStyle())
                 .disabled(!canSubmit)
             }
 
@@ -92,6 +96,25 @@ struct LoginView: View {
     }
 }
 
+private struct PrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body.weight(.semibold))
+            .foregroundStyle(isEnabled ? Color(.systemBackground) : Color.secondary)
+            .tint(Color(.systemBackground))
+            .frame(minHeight: 52)
+            .background(
+                isEnabled ? AnyShapeStyle(.primary) : AnyShapeStyle(.fill.tertiary),
+                in: Capsule()
+            )
+            .opacity(configuration.isPressed ? 0.8 : 1)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
 private struct FieldStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
@@ -101,7 +124,13 @@ private struct FieldStyle: ViewModifier {
     }
 }
 
-#Preview {
+#Preview("Claro") {
     LoginView()
         .environment(SessionStore())
+}
+
+#Preview("Escuro") {
+    LoginView()
+        .environment(SessionStore())
+        .preferredColorScheme(.dark)
 }

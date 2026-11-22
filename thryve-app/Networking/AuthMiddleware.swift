@@ -2,7 +2,6 @@ import Foundation
 import HTTPTypes
 import OpenAPIRuntime
 
-/// Coloca o JWT salvo em toda requisição, menos no login, que é quem gera o token.
 struct AuthMiddleware: ClientMiddleware {
     let tokenStore: TokenStore
 
