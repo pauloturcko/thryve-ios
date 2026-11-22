@@ -21,13 +21,19 @@ struct LoginView: View {
         VStack(alignment: .leading, spacing: 32) {
             Spacer()
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Thryve")
-                    .font(.largeTitle.weight(.semibold))
+            VStack(spacing: 12) {
+                // Asset em modo template: pega a cor do texto e acompanha o tema claro/escuro.
+                Image(.thryveLogo)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 44)
+                    .foregroundStyle(.primary)
+                    .accessibilityLabel("Thryve")
                 Text("Fale o que gastou. A Thryve anota.")
                     .font(.body)
                     .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity)
 
             VStack(spacing: 12) {
                 TextField("E-mail", text: $email)
@@ -101,7 +107,13 @@ private struct FieldStyle: ViewModifier {
     }
 }
 
-#Preview {
+#Preview("Claro") {
     LoginView()
         .environment(SessionStore())
+}
+
+#Preview("Escuro") {
+    LoginView()
+        .environment(SessionStore())
+        .preferredColorScheme(.dark)
 }
