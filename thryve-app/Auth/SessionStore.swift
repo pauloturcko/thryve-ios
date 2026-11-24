@@ -50,7 +50,7 @@ final class SessionStore {
     private(set) var state: State = .restoring
 
     private let tokenStore: TokenStore
-    private let client: Client
+    let client: Client
 
     init(tokenStore: TokenStore = TokenStore()) {
         self.tokenStore = tokenStore

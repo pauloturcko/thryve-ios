@@ -53,6 +53,8 @@ internal protocol APIProtocol: Sendable {
     func postCardsRegister(_ input: Operations.PostCardsRegister.Input) async throws -> Operations.PostCardsRegister.Output
     /// Listar todos os cartões do usuário logado
     ///
+    /// Cada cartão traz bankAccount (conta vinculada, ou null), usedLimit (compras no crédito ainda pendentes) e availableLimit (limit - usedLimit). Cartão só de débito tem os dois como null
+    ///
     /// - Remark: HTTP `GET /cards/user-cards`.
     /// - Remark: Generated from `#/paths//cards/user-cards/get`.
     func getCardsUserCards(_ input: Operations.GetCardsUserCards.Input) async throws -> Operations.GetCardsUserCards.Output
@@ -237,32 +239,6 @@ internal protocol APIProtocol: Sendable {
     /// - Remark: HTTP `DELETE /reports/delete`.
     /// - Remark: Generated from `#/paths//reports/delete/delete`.
     func deleteReportsDelete(_ input: Operations.DeleteReportsDelete.Input) async throws -> Operations.DeleteReportsDelete.Output
-    /// Gerar o Connect Token para abrir o widget Pluggy Connect
-    ///
-    /// Responde { accessToken }, válido por 30 minutos. O clientUserId enviado ao Pluggy é o id do usuário logado
-    ///
-    /// - Remark: HTTP `POST /open-finance/connect-token`.
-    /// - Remark: Generated from `#/paths//open-finance/connect-token/post`.
-    func postOpenFinanceConnectToken(_ input: Operations.PostOpenFinanceConnectToken.Input) async throws -> Operations.PostOpenFinanceConnectToken.Output
-    /// Salvar a conexão criada pelo widget (onSuccess)
-    ///
-    /// Busca o Item no Pluggy e só salva se ele foi criado com um token deste usuário. Salvar o mesmo itemId de novo atualiza o registro
-    ///
-    /// - Remark: HTTP `POST /open-finance/items/register`.
-    /// - Remark: Generated from `#/paths//open-finance/items/register/post`.
-    func postOpenFinanceItemsRegister(_ input: Operations.PostOpenFinanceItemsRegister.Input) async throws -> Operations.PostOpenFinanceItemsRegister.Output
-    /// Receber webhooks do Pluggy (chamado pelo Pluggy, não pelo front)
-    ///
-    /// Rota pública, autenticada pela assinatura X-Pluggy-Signature (HMAC-SHA256 de "<t>.<corpo bruto>" com PLUGGY_WEBHOOK_SECRET; timestamp com até 5 min). Responde 2XX na hora e processa depois. Eventos repetidos (mesmo eventId) são ignorados. Tratados: item/created, item/updated, item/login_succeeded e item/error (sincroniza a conexão com o Pluggy) e item/deleted (remove a conexão). Os demais ficam só registrados em pluggy_webhook_events
-    ///
-    /// - Remark: HTTP `POST /open-finance/webhooks/pluggy`.
-    /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post`.
-    func postOpenFinanceWebhooksPluggy(_ input: Operations.PostOpenFinanceWebhooksPluggy.Input) async throws -> Operations.PostOpenFinanceWebhooksPluggy.Output
-    /// Listar as conexões Open Finance do usuário logado
-    ///
-    /// - Remark: HTTP `GET /open-finance/items/user-items`.
-    /// - Remark: Generated from `#/paths//open-finance/items/user-items/get`.
-    func getOpenFinanceItemsUserItems(_ input: Operations.GetOpenFinanceItemsUserItems.Input) async throws -> Operations.GetOpenFinanceItemsUserItems.Output
     /// Cadastrar uma nova receita para o usuário logado
     ///
     /// - Remark: HTTP `POST /incomes/register`.
@@ -303,6 +279,37 @@ internal protocol APIProtocol: Sendable {
     /// - Remark: HTTP `DELETE /expenses/delete`.
     /// - Remark: Generated from `#/paths//expenses/delete/delete`.
     func deleteExpensesDelete(_ input: Operations.DeleteExpensesDelete.Input) async throws -> Operations.DeleteExpensesDelete.Output
+    /// Cartões, contas, categorias de gasto e formas de pagamento ativas do usuário
+    ///
+    /// Usado pelo app de voz para transformar o que foi falado em ids
+    ///
+    /// - Remark: HTTP `GET /expense-drafts/context`.
+    /// - Remark: Generated from `#/paths//expense-drafts/context/get`.
+    func getExpenseDraftsContext(_ input: Operations.GetExpenseDraftsContext.Input) async throws -> Operations.GetExpenseDraftsContext.Output
+    /// Salvar um gasto falado como rascunho, para revisar depois
+    ///
+    /// Rascunho não entra em saldo, relatórios nem listagem de gastos. Os ids enviados precisam ser do usuário; combinações (ex.: cartão de débito no crédito) só são conferidas ao confirmar
+    ///
+    /// - Remark: HTTP `POST /expense-drafts/register`.
+    /// - Remark: Generated from `#/paths//expense-drafts/register/post`.
+    func postExpenseDraftsRegister(_ input: Operations.PostExpenseDraftsRegister.Input) async throws -> Operations.PostExpenseDraftsRegister.Output
+    /// Rascunhos do usuário logado, mais recentes primeiro
+    ///
+    /// - Remark: HTTP `GET /expense-drafts/user-drafts`.
+    /// - Remark: Generated from `#/paths//expense-drafts/user-drafts/get`.
+    func getExpenseDraftsUserDrafts(_ input: Operations.GetExpenseDraftsUserDrafts.Input) async throws -> Operations.GetExpenseDraftsUserDrafts.Output
+    /// Transformar o rascunho em gasto
+    ///
+    /// Mesmas regras de /expenses/register. O gasto é criado e o rascunho apagado na mesma transação. Se faltar algo, responde 400 e o rascunho continua lá
+    ///
+    /// - Remark: HTTP `POST /expense-drafts/confirm`.
+    /// - Remark: Generated from `#/paths//expense-drafts/confirm/post`.
+    func postExpenseDraftsConfirm(_ input: Operations.PostExpenseDraftsConfirm.Input) async throws -> Operations.PostExpenseDraftsConfirm.Output
+    /// Descartar um rascunho
+    ///
+    /// - Remark: HTTP `DELETE /expense-drafts/delete`.
+    /// - Remark: Generated from `#/paths//expense-drafts/delete/delete`.
+    func deleteExpenseDraftsDelete(_ input: Operations.DeleteExpenseDraftsDelete.Input) async throws -> Operations.DeleteExpenseDraftsDelete.Output
 }
 
 /// Convenience overloads for operation inputs.
@@ -402,6 +409,8 @@ extension APIProtocol {
         try await postCardsRegister(Operations.PostCardsRegister.Input(body: body))
     }
     /// Listar todos os cartões do usuário logado
+    ///
+    /// Cada cartão traz bankAccount (conta vinculada, ou null), usedLimit (compras no crédito ainda pendentes) e availableLimit (limit - usedLimit). Cartão só de débito tem os dois como null
     ///
     /// - Remark: HTTP `GET /cards/user-cards`.
     /// - Remark: Generated from `#/paths//cards/user-cards/get`.
@@ -663,46 +672,6 @@ extension APIProtocol {
     internal func deleteReportsDelete(body: Operations.DeleteReportsDelete.Input.Body) async throws -> Operations.DeleteReportsDelete.Output {
         try await deleteReportsDelete(Operations.DeleteReportsDelete.Input(body: body))
     }
-    /// Gerar o Connect Token para abrir o widget Pluggy Connect
-    ///
-    /// Responde { accessToken }, válido por 30 minutos. O clientUserId enviado ao Pluggy é o id do usuário logado
-    ///
-    /// - Remark: HTTP `POST /open-finance/connect-token`.
-    /// - Remark: Generated from `#/paths//open-finance/connect-token/post`.
-    internal func postOpenFinanceConnectToken(body: Operations.PostOpenFinanceConnectToken.Input.Body? = nil) async throws -> Operations.PostOpenFinanceConnectToken.Output {
-        try await postOpenFinanceConnectToken(Operations.PostOpenFinanceConnectToken.Input(body: body))
-    }
-    /// Salvar a conexão criada pelo widget (onSuccess)
-    ///
-    /// Busca o Item no Pluggy e só salva se ele foi criado com um token deste usuário. Salvar o mesmo itemId de novo atualiza o registro
-    ///
-    /// - Remark: HTTP `POST /open-finance/items/register`.
-    /// - Remark: Generated from `#/paths//open-finance/items/register/post`.
-    internal func postOpenFinanceItemsRegister(body: Operations.PostOpenFinanceItemsRegister.Input.Body) async throws -> Operations.PostOpenFinanceItemsRegister.Output {
-        try await postOpenFinanceItemsRegister(Operations.PostOpenFinanceItemsRegister.Input(body: body))
-    }
-    /// Receber webhooks do Pluggy (chamado pelo Pluggy, não pelo front)
-    ///
-    /// Rota pública, autenticada pela assinatura X-Pluggy-Signature (HMAC-SHA256 de "<t>.<corpo bruto>" com PLUGGY_WEBHOOK_SECRET; timestamp com até 5 min). Responde 2XX na hora e processa depois. Eventos repetidos (mesmo eventId) são ignorados. Tratados: item/created, item/updated, item/login_succeeded e item/error (sincroniza a conexão com o Pluggy) e item/deleted (remove a conexão). Os demais ficam só registrados em pluggy_webhook_events
-    ///
-    /// - Remark: HTTP `POST /open-finance/webhooks/pluggy`.
-    /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post`.
-    internal func postOpenFinanceWebhooksPluggy(
-        headers: Operations.PostOpenFinanceWebhooksPluggy.Input.Headers,
-        body: Operations.PostOpenFinanceWebhooksPluggy.Input.Body
-    ) async throws -> Operations.PostOpenFinanceWebhooksPluggy.Output {
-        try await postOpenFinanceWebhooksPluggy(Operations.PostOpenFinanceWebhooksPluggy.Input(
-            headers: headers,
-            body: body
-        ))
-    }
-    /// Listar as conexões Open Finance do usuário logado
-    ///
-    /// - Remark: HTTP `GET /open-finance/items/user-items`.
-    /// - Remark: Generated from `#/paths//open-finance/items/user-items/get`.
-    internal func getOpenFinanceItemsUserItems() async throws -> Operations.GetOpenFinanceItemsUserItems.Output {
-        try await getOpenFinanceItemsUserItems(Operations.GetOpenFinanceItemsUserItems.Input())
-    }
     /// Cadastrar uma nova receita para o usuário logado
     ///
     /// - Remark: HTTP `POST /incomes/register`.
@@ -758,6 +727,53 @@ extension APIProtocol {
     /// - Remark: Generated from `#/paths//expenses/delete/delete`.
     internal func deleteExpensesDelete(body: Operations.DeleteExpensesDelete.Input.Body) async throws -> Operations.DeleteExpensesDelete.Output {
         try await deleteExpensesDelete(Operations.DeleteExpensesDelete.Input(body: body))
+    }
+    /// Cartões, contas, categorias de gasto e formas de pagamento ativas do usuário
+    ///
+    /// Usado pelo app de voz para transformar o que foi falado em ids
+    ///
+    /// - Remark: HTTP `GET /expense-drafts/context`.
+    /// - Remark: Generated from `#/paths//expense-drafts/context/get`.
+    internal func getExpenseDraftsContext(headers: Operations.GetExpenseDraftsContext.Input.Headers = .init()) async throws -> Operations.GetExpenseDraftsContext.Output {
+        try await getExpenseDraftsContext(Operations.GetExpenseDraftsContext.Input(headers: headers))
+    }
+    /// Salvar um gasto falado como rascunho, para revisar depois
+    ///
+    /// Rascunho não entra em saldo, relatórios nem listagem de gastos. Os ids enviados precisam ser do usuário; combinações (ex.: cartão de débito no crédito) só são conferidas ao confirmar
+    ///
+    /// - Remark: HTTP `POST /expense-drafts/register`.
+    /// - Remark: Generated from `#/paths//expense-drafts/register/post`.
+    internal func postExpenseDraftsRegister(
+        headers: Operations.PostExpenseDraftsRegister.Input.Headers = .init(),
+        body: Operations.PostExpenseDraftsRegister.Input.Body
+    ) async throws -> Operations.PostExpenseDraftsRegister.Output {
+        try await postExpenseDraftsRegister(Operations.PostExpenseDraftsRegister.Input(
+            headers: headers,
+            body: body
+        ))
+    }
+    /// Rascunhos do usuário logado, mais recentes primeiro
+    ///
+    /// - Remark: HTTP `GET /expense-drafts/user-drafts`.
+    /// - Remark: Generated from `#/paths//expense-drafts/user-drafts/get`.
+    internal func getExpenseDraftsUserDrafts(headers: Operations.GetExpenseDraftsUserDrafts.Input.Headers = .init()) async throws -> Operations.GetExpenseDraftsUserDrafts.Output {
+        try await getExpenseDraftsUserDrafts(Operations.GetExpenseDraftsUserDrafts.Input(headers: headers))
+    }
+    /// Transformar o rascunho em gasto
+    ///
+    /// Mesmas regras de /expenses/register. O gasto é criado e o rascunho apagado na mesma transação. Se faltar algo, responde 400 e o rascunho continua lá
+    ///
+    /// - Remark: HTTP `POST /expense-drafts/confirm`.
+    /// - Remark: Generated from `#/paths//expense-drafts/confirm/post`.
+    internal func postExpenseDraftsConfirm(body: Operations.PostExpenseDraftsConfirm.Input.Body) async throws -> Operations.PostExpenseDraftsConfirm.Output {
+        try await postExpenseDraftsConfirm(Operations.PostExpenseDraftsConfirm.Input(body: body))
+    }
+    /// Descartar um rascunho
+    ///
+    /// - Remark: HTTP `DELETE /expense-drafts/delete`.
+    /// - Remark: Generated from `#/paths//expense-drafts/delete/delete`.
+    internal func deleteExpenseDraftsDelete(body: Operations.DeleteExpenseDraftsDelete.Input.Body) async throws -> Operations.DeleteExpenseDraftsDelete.Output {
+        try await deleteExpenseDraftsDelete(Operations.DeleteExpenseDraftsDelete.Input(body: body))
     }
 }
 

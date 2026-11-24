@@ -1556,6 +1556,8 @@ internal enum Operations {
     }
     /// Listar todos os cartões do usuário logado
     ///
+    /// Cada cartão traz bankAccount (conta vinculada, ou null), usedLimit (compras no crédito ainda pendentes) e availableLimit (limit - usedLimit). Cartão só de débito tem os dois como null
+    ///
     /// - Remark: HTTP `GET /cards/user-cards`.
     /// - Remark: Generated from `#/paths//cards/user-cards/get`.
     internal enum GetCardsUserCards {
@@ -7743,802 +7745,6 @@ internal enum Operations {
             case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
         }
     }
-    /// Gerar o Connect Token para abrir o widget Pluggy Connect
-    ///
-    /// Responde { accessToken }, válido por 30 minutos. O clientUserId enviado ao Pluggy é o id do usuário logado
-    ///
-    /// - Remark: HTTP `POST /open-finance/connect-token`.
-    /// - Remark: Generated from `#/paths//open-finance/connect-token/post`.
-    internal enum PostOpenFinanceConnectToken {
-        internal static let id: Swift.String = "post/open-finance/connect-token"
-        internal struct Input: Sendable, Hashable {
-            /// - Remark: Generated from `#/paths/open-finance/connect-token/POST/requestBody`.
-            internal enum Body: Sendable, Hashable {
-                /// - Remark: Generated from `#/paths/open-finance/connect-token/POST/requestBody/content/application\/json`.
-                case json(Components.Schemas.OpenFinanceConnectTokenInput)
-            }
-            internal var body: Operations.PostOpenFinanceConnectToken.Input.Body?
-            /// Creates a new `Input`.
-            ///
-            /// - Parameters:
-            ///   - body:
-            internal init(body: Operations.PostOpenFinanceConnectToken.Input.Body? = nil) {
-                self.body = body
-            }
-        }
-        internal enum Output: Sendable, Hashable {
-            internal struct Ok: Sendable, Hashable {
-                /// Creates a new `Ok`.
-                internal init() {}
-            }
-            /// Token gerado
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/200`.
-            ///
-            /// HTTP response code: `200 ok`.
-            case ok(Operations.PostOpenFinanceConnectToken.Output.Ok)
-            /// Token gerado
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/200`.
-            ///
-            /// HTTP response code: `200 ok`.
-            internal static var ok: Self {
-                .ok(.init())
-            }
-            /// The associated value of the enum case if `self` is `.ok`.
-            ///
-            /// - Throws: An error if `self` is not `.ok`.
-            /// - SeeAlso: `.ok`.
-            internal var ok: Operations.PostOpenFinanceConnectToken.Output.Ok {
-                get throws {
-                    switch self {
-                    case let .ok(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "ok",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct BadRequest: Sendable, Hashable {
-                /// Creates a new `BadRequest`.
-                internal init() {}
-            }
-            /// itemId inválido
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/400`.
-            ///
-            /// HTTP response code: `400 badRequest`.
-            case badRequest(Operations.PostOpenFinanceConnectToken.Output.BadRequest)
-            /// itemId inválido
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/400`.
-            ///
-            /// HTTP response code: `400 badRequest`.
-            internal static var badRequest: Self {
-                .badRequest(.init())
-            }
-            /// The associated value of the enum case if `self` is `.badRequest`.
-            ///
-            /// - Throws: An error if `self` is not `.badRequest`.
-            /// - SeeAlso: `.badRequest`.
-            internal var badRequest: Operations.PostOpenFinanceConnectToken.Output.BadRequest {
-                get throws {
-                    switch self {
-                    case let .badRequest(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "badRequest",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct Unauthorized: Sendable, Hashable {
-                /// Creates a new `Unauthorized`.
-                internal init() {}
-            }
-            /// Não autorizado
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/401`.
-            ///
-            /// HTTP response code: `401 unauthorized`.
-            case unauthorized(Operations.PostOpenFinanceConnectToken.Output.Unauthorized)
-            /// Não autorizado
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/401`.
-            ///
-            /// HTTP response code: `401 unauthorized`.
-            internal static var unauthorized: Self {
-                .unauthorized(.init())
-            }
-            /// The associated value of the enum case if `self` is `.unauthorized`.
-            ///
-            /// - Throws: An error if `self` is not `.unauthorized`.
-            /// - SeeAlso: `.unauthorized`.
-            internal var unauthorized: Operations.PostOpenFinanceConnectToken.Output.Unauthorized {
-                get throws {
-                    switch self {
-                    case let .unauthorized(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "unauthorized",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct Forbidden: Sendable, Hashable {
-                /// Creates a new `Forbidden`.
-                internal init() {}
-            }
-            /// A conexão pertence a outro usuário
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/403`.
-            ///
-            /// HTTP response code: `403 forbidden`.
-            case forbidden(Operations.PostOpenFinanceConnectToken.Output.Forbidden)
-            /// A conexão pertence a outro usuário
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/403`.
-            ///
-            /// HTTP response code: `403 forbidden`.
-            internal static var forbidden: Self {
-                .forbidden(.init())
-            }
-            /// The associated value of the enum case if `self` is `.forbidden`.
-            ///
-            /// - Throws: An error if `self` is not `.forbidden`.
-            /// - SeeAlso: `.forbidden`.
-            internal var forbidden: Operations.PostOpenFinanceConnectToken.Output.Forbidden {
-                get throws {
-                    switch self {
-                    case let .forbidden(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "forbidden",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct NotFound: Sendable, Hashable {
-                /// Creates a new `NotFound`.
-                internal init() {}
-            }
-            /// Conexão não encontrada (OPEN_FINANCE_ITEM_NOT_FOUND)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/404`.
-            ///
-            /// HTTP response code: `404 notFound`.
-            case notFound(Operations.PostOpenFinanceConnectToken.Output.NotFound)
-            /// Conexão não encontrada (OPEN_FINANCE_ITEM_NOT_FOUND)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/404`.
-            ///
-            /// HTTP response code: `404 notFound`.
-            internal static var notFound: Self {
-                .notFound(.init())
-            }
-            /// The associated value of the enum case if `self` is `.notFound`.
-            ///
-            /// - Throws: An error if `self` is not `.notFound`.
-            /// - SeeAlso: `.notFound`.
-            internal var notFound: Operations.PostOpenFinanceConnectToken.Output.NotFound {
-                get throws {
-                    switch self {
-                    case let .notFound(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "notFound",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct InternalServerError: Sendable, Hashable {
-                /// Creates a new `InternalServerError`.
-                internal init() {}
-            }
-            /// Credenciais do Pluggy não configuradas (OPEN_FINANCE_NOT_CONFIGURED) ou falha no Pluggy (OPEN_FINANCE_PROVIDER_ERROR)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/500`.
-            ///
-            /// HTTP response code: `500 internalServerError`.
-            case internalServerError(Operations.PostOpenFinanceConnectToken.Output.InternalServerError)
-            /// Credenciais do Pluggy não configuradas (OPEN_FINANCE_NOT_CONFIGURED) ou falha no Pluggy (OPEN_FINANCE_PROVIDER_ERROR)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/connect-token/post/responses/500`.
-            ///
-            /// HTTP response code: `500 internalServerError`.
-            internal static var internalServerError: Self {
-                .internalServerError(.init())
-            }
-            /// The associated value of the enum case if `self` is `.internalServerError`.
-            ///
-            /// - Throws: An error if `self` is not `.internalServerError`.
-            /// - SeeAlso: `.internalServerError`.
-            internal var internalServerError: Operations.PostOpenFinanceConnectToken.Output.InternalServerError {
-                get throws {
-                    switch self {
-                    case let .internalServerError(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "internalServerError",
-                            response: self
-                        )
-                    }
-                }
-            }
-            /// Undocumented response.
-            ///
-            /// A response with a code that is not documented in the OpenAPI document.
-            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
-        }
-    }
-    /// Salvar a conexão criada pelo widget (onSuccess)
-    ///
-    /// Busca o Item no Pluggy e só salva se ele foi criado com um token deste usuário. Salvar o mesmo itemId de novo atualiza o registro
-    ///
-    /// - Remark: HTTP `POST /open-finance/items/register`.
-    /// - Remark: Generated from `#/paths//open-finance/items/register/post`.
-    internal enum PostOpenFinanceItemsRegister {
-        internal static let id: Swift.String = "post/open-finance/items/register"
-        internal struct Input: Sendable, Hashable {
-            /// - Remark: Generated from `#/paths/open-finance/items/register/POST/requestBody`.
-            internal enum Body: Sendable, Hashable {
-                /// - Remark: Generated from `#/paths/open-finance/items/register/POST/requestBody/content/application\/json`.
-                case json(Components.Schemas.OpenFinanceRegisterItemInput)
-            }
-            internal var body: Operations.PostOpenFinanceItemsRegister.Input.Body
-            /// Creates a new `Input`.
-            ///
-            /// - Parameters:
-            ///   - body:
-            internal init(body: Operations.PostOpenFinanceItemsRegister.Input.Body) {
-                self.body = body
-            }
-        }
-        internal enum Output: Sendable, Hashable {
-            internal struct Created: Sendable, Hashable {
-                /// Creates a new `Created`.
-                internal init() {}
-            }
-            /// Conexão salva
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/201`.
-            ///
-            /// HTTP response code: `201 created`.
-            case created(Operations.PostOpenFinanceItemsRegister.Output.Created)
-            /// Conexão salva
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/201`.
-            ///
-            /// HTTP response code: `201 created`.
-            internal static var created: Self {
-                .created(.init())
-            }
-            /// The associated value of the enum case if `self` is `.created`.
-            ///
-            /// - Throws: An error if `self` is not `.created`.
-            /// - SeeAlso: `.created`.
-            internal var created: Operations.PostOpenFinanceItemsRegister.Output.Created {
-                get throws {
-                    switch self {
-                    case let .created(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "created",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct BadRequest: Sendable, Hashable {
-                /// Creates a new `BadRequest`.
-                internal init() {}
-            }
-            /// itemId ausente ou inválido
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/400`.
-            ///
-            /// HTTP response code: `400 badRequest`.
-            case badRequest(Operations.PostOpenFinanceItemsRegister.Output.BadRequest)
-            /// itemId ausente ou inválido
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/400`.
-            ///
-            /// HTTP response code: `400 badRequest`.
-            internal static var badRequest: Self {
-                .badRequest(.init())
-            }
-            /// The associated value of the enum case if `self` is `.badRequest`.
-            ///
-            /// - Throws: An error if `self` is not `.badRequest`.
-            /// - SeeAlso: `.badRequest`.
-            internal var badRequest: Operations.PostOpenFinanceItemsRegister.Output.BadRequest {
-                get throws {
-                    switch self {
-                    case let .badRequest(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "badRequest",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct Unauthorized: Sendable, Hashable {
-                /// Creates a new `Unauthorized`.
-                internal init() {}
-            }
-            /// Não autorizado
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/401`.
-            ///
-            /// HTTP response code: `401 unauthorized`.
-            case unauthorized(Operations.PostOpenFinanceItemsRegister.Output.Unauthorized)
-            /// Não autorizado
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/401`.
-            ///
-            /// HTTP response code: `401 unauthorized`.
-            internal static var unauthorized: Self {
-                .unauthorized(.init())
-            }
-            /// The associated value of the enum case if `self` is `.unauthorized`.
-            ///
-            /// - Throws: An error if `self` is not `.unauthorized`.
-            /// - SeeAlso: `.unauthorized`.
-            internal var unauthorized: Operations.PostOpenFinanceItemsRegister.Output.Unauthorized {
-                get throws {
-                    switch self {
-                    case let .unauthorized(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "unauthorized",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct Forbidden: Sendable, Hashable {
-                /// Creates a new `Forbidden`.
-                internal init() {}
-            }
-            /// O Item foi criado para outro usuário
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/403`.
-            ///
-            /// HTTP response code: `403 forbidden`.
-            case forbidden(Operations.PostOpenFinanceItemsRegister.Output.Forbidden)
-            /// O Item foi criado para outro usuário
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/403`.
-            ///
-            /// HTTP response code: `403 forbidden`.
-            internal static var forbidden: Self {
-                .forbidden(.init())
-            }
-            /// The associated value of the enum case if `self` is `.forbidden`.
-            ///
-            /// - Throws: An error if `self` is not `.forbidden`.
-            /// - SeeAlso: `.forbidden`.
-            internal var forbidden: Operations.PostOpenFinanceItemsRegister.Output.Forbidden {
-                get throws {
-                    switch self {
-                    case let .forbidden(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "forbidden",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct NotFound: Sendable, Hashable {
-                /// Creates a new `NotFound`.
-                internal init() {}
-            }
-            /// Item não existe no Pluggy (OPEN_FINANCE_ITEM_NOT_FOUND)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/404`.
-            ///
-            /// HTTP response code: `404 notFound`.
-            case notFound(Operations.PostOpenFinanceItemsRegister.Output.NotFound)
-            /// Item não existe no Pluggy (OPEN_FINANCE_ITEM_NOT_FOUND)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/404`.
-            ///
-            /// HTTP response code: `404 notFound`.
-            internal static var notFound: Self {
-                .notFound(.init())
-            }
-            /// The associated value of the enum case if `self` is `.notFound`.
-            ///
-            /// - Throws: An error if `self` is not `.notFound`.
-            /// - SeeAlso: `.notFound`.
-            internal var notFound: Operations.PostOpenFinanceItemsRegister.Output.NotFound {
-                get throws {
-                    switch self {
-                    case let .notFound(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "notFound",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct InternalServerError: Sendable, Hashable {
-                /// Creates a new `InternalServerError`.
-                internal init() {}
-            }
-            /// OPEN_FINANCE_NOT_CONFIGURED ou OPEN_FINANCE_PROVIDER_ERROR
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/500`.
-            ///
-            /// HTTP response code: `500 internalServerError`.
-            case internalServerError(Operations.PostOpenFinanceItemsRegister.Output.InternalServerError)
-            /// OPEN_FINANCE_NOT_CONFIGURED ou OPEN_FINANCE_PROVIDER_ERROR
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/register/post/responses/500`.
-            ///
-            /// HTTP response code: `500 internalServerError`.
-            internal static var internalServerError: Self {
-                .internalServerError(.init())
-            }
-            /// The associated value of the enum case if `self` is `.internalServerError`.
-            ///
-            /// - Throws: An error if `self` is not `.internalServerError`.
-            /// - SeeAlso: `.internalServerError`.
-            internal var internalServerError: Operations.PostOpenFinanceItemsRegister.Output.InternalServerError {
-                get throws {
-                    switch self {
-                    case let .internalServerError(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "internalServerError",
-                            response: self
-                        )
-                    }
-                }
-            }
-            /// Undocumented response.
-            ///
-            /// A response with a code that is not documented in the OpenAPI document.
-            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
-        }
-    }
-    /// Receber webhooks do Pluggy (chamado pelo Pluggy, não pelo front)
-    ///
-    /// Rota pública, autenticada pela assinatura X-Pluggy-Signature (HMAC-SHA256 de "<t>.<corpo bruto>" com PLUGGY_WEBHOOK_SECRET; timestamp com até 5 min). Responde 2XX na hora e processa depois. Eventos repetidos (mesmo eventId) são ignorados. Tratados: item/created, item/updated, item/login_succeeded e item/error (sincroniza a conexão com o Pluggy) e item/deleted (remove a conexão). Os demais ficam só registrados em pluggy_webhook_events
-    ///
-    /// - Remark: HTTP `POST /open-finance/webhooks/pluggy`.
-    /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post`.
-    internal enum PostOpenFinanceWebhooksPluggy {
-        internal static let id: Swift.String = "post/open-finance/webhooks/pluggy"
-        internal struct Input: Sendable, Hashable {
-            /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/header`.
-            internal struct Headers: Sendable, Hashable {
-                /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/header/X-Pluggy-Signature`.
-                internal var xPluggySignature: Swift.String
-                /// Creates a new `Headers`.
-                ///
-                /// - Parameters:
-                ///   - xPluggySignature:
-                internal init(xPluggySignature: Swift.String) {
-                    self.xPluggySignature = xPluggySignature
-                }
-            }
-            internal var headers: Operations.PostOpenFinanceWebhooksPluggy.Input.Headers
-            /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/requestBody`.
-            internal enum Body: Sendable, Hashable {
-                /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/requestBody/json`.
-                internal struct JsonPayload: Codable, Hashable, Sendable {
-                    /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/requestBody/json/event`.
-                    internal var event: Swift.String
-                    /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/requestBody/json/eventId`.
-                    internal var eventId: Swift.String
-                    /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/requestBody/json/itemId`.
-                    internal var itemId: Swift.String?
-                    /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/requestBody/json/triggeredBy`.
-                    internal var triggeredBy: Swift.String?
-                    /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/requestBody/json/clientUserId`.
-                    internal var clientUserId: Swift.String?
-                    /// Creates a new `JsonPayload`.
-                    ///
-                    /// - Parameters:
-                    ///   - event:
-                    ///   - eventId:
-                    ///   - itemId:
-                    ///   - triggeredBy:
-                    ///   - clientUserId:
-                    internal init(
-                        event: Swift.String,
-                        eventId: Swift.String,
-                        itemId: Swift.String? = nil,
-                        triggeredBy: Swift.String? = nil,
-                        clientUserId: Swift.String? = nil
-                    ) {
-                        self.event = event
-                        self.eventId = eventId
-                        self.itemId = itemId
-                        self.triggeredBy = triggeredBy
-                        self.clientUserId = clientUserId
-                    }
-                    internal enum CodingKeys: String, CodingKey {
-                        case event
-                        case eventId
-                        case itemId
-                        case triggeredBy
-                        case clientUserId
-                    }
-                }
-                /// - Remark: Generated from `#/paths/open-finance/webhooks/pluggy/POST/requestBody/content/application\/json`.
-                case json(Operations.PostOpenFinanceWebhooksPluggy.Input.Body.JsonPayload)
-            }
-            internal var body: Operations.PostOpenFinanceWebhooksPluggy.Input.Body
-            /// Creates a new `Input`.
-            ///
-            /// - Parameters:
-            ///   - headers:
-            ///   - body:
-            internal init(
-                headers: Operations.PostOpenFinanceWebhooksPluggy.Input.Headers,
-                body: Operations.PostOpenFinanceWebhooksPluggy.Input.Body
-            ) {
-                self.headers = headers
-                self.body = body
-            }
-        }
-        internal enum Output: Sendable, Hashable {
-            internal struct Ok: Sendable, Hashable {
-                /// Creates a new `Ok`.
-                internal init() {}
-            }
-            /// Evento aceito ({ received: true }), repetido ({ received: true, duplicate: true }) ou descartado por PLUGGY_WEBHOOK_SECRET não configurado ({ received: false, reason })
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post/responses/200`.
-            ///
-            /// HTTP response code: `200 ok`.
-            case ok(Operations.PostOpenFinanceWebhooksPluggy.Output.Ok)
-            /// Evento aceito ({ received: true }), repetido ({ received: true, duplicate: true }) ou descartado por PLUGGY_WEBHOOK_SECRET não configurado ({ received: false, reason })
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post/responses/200`.
-            ///
-            /// HTTP response code: `200 ok`.
-            internal static var ok: Self {
-                .ok(.init())
-            }
-            /// The associated value of the enum case if `self` is `.ok`.
-            ///
-            /// - Throws: An error if `self` is not `.ok`.
-            /// - SeeAlso: `.ok`.
-            internal var ok: Operations.PostOpenFinanceWebhooksPluggy.Output.Ok {
-                get throws {
-                    switch self {
-                    case let .ok(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "ok",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct BadRequest: Sendable, Hashable {
-                /// Creates a new `BadRequest`.
-                internal init() {}
-            }
-            /// Corpo não é JSON válido ou faltam event/eventId (o Pluggy não reenvia)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post/responses/400`.
-            ///
-            /// HTTP response code: `400 badRequest`.
-            case badRequest(Operations.PostOpenFinanceWebhooksPluggy.Output.BadRequest)
-            /// Corpo não é JSON válido ou faltam event/eventId (o Pluggy não reenvia)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post/responses/400`.
-            ///
-            /// HTTP response code: `400 badRequest`.
-            internal static var badRequest: Self {
-                .badRequest(.init())
-            }
-            /// The associated value of the enum case if `self` is `.badRequest`.
-            ///
-            /// - Throws: An error if `self` is not `.badRequest`.
-            /// - SeeAlso: `.badRequest`.
-            internal var badRequest: Operations.PostOpenFinanceWebhooksPluggy.Output.BadRequest {
-                get throws {
-                    switch self {
-                    case let .badRequest(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "badRequest",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct Unauthorized: Sendable, Hashable {
-                /// Creates a new `Unauthorized`.
-                internal init() {}
-            }
-            /// Assinatura ausente, inválida ou expirada (o Pluggy não reenvia)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post/responses/401`.
-            ///
-            /// HTTP response code: `401 unauthorized`.
-            case unauthorized(Operations.PostOpenFinanceWebhooksPluggy.Output.Unauthorized)
-            /// Assinatura ausente, inválida ou expirada (o Pluggy não reenvia)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post/responses/401`.
-            ///
-            /// HTTP response code: `401 unauthorized`.
-            internal static var unauthorized: Self {
-                .unauthorized(.init())
-            }
-            /// The associated value of the enum case if `self` is `.unauthorized`.
-            ///
-            /// - Throws: An error if `self` is not `.unauthorized`.
-            /// - SeeAlso: `.unauthorized`.
-            internal var unauthorized: Operations.PostOpenFinanceWebhooksPluggy.Output.Unauthorized {
-                get throws {
-                    switch self {
-                    case let .unauthorized(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "unauthorized",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct InternalServerError: Sendable, Hashable {
-                /// Creates a new `InternalServerError`.
-                internal init() {}
-            }
-            /// Falha ao registrar o evento (o Pluggy reenvia)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post/responses/500`.
-            ///
-            /// HTTP response code: `500 internalServerError`.
-            case internalServerError(Operations.PostOpenFinanceWebhooksPluggy.Output.InternalServerError)
-            /// Falha ao registrar o evento (o Pluggy reenvia)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post/responses/500`.
-            ///
-            /// HTTP response code: `500 internalServerError`.
-            internal static var internalServerError: Self {
-                .internalServerError(.init())
-            }
-            /// The associated value of the enum case if `self` is `.internalServerError`.
-            ///
-            /// - Throws: An error if `self` is not `.internalServerError`.
-            /// - SeeAlso: `.internalServerError`.
-            internal var internalServerError: Operations.PostOpenFinanceWebhooksPluggy.Output.InternalServerError {
-                get throws {
-                    switch self {
-                    case let .internalServerError(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "internalServerError",
-                            response: self
-                        )
-                    }
-                }
-            }
-            /// Undocumented response.
-            ///
-            /// A response with a code that is not documented in the OpenAPI document.
-            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
-        }
-    }
-    /// Listar as conexões Open Finance do usuário logado
-    ///
-    /// - Remark: HTTP `GET /open-finance/items/user-items`.
-    /// - Remark: Generated from `#/paths//open-finance/items/user-items/get`.
-    internal enum GetOpenFinanceItemsUserItems {
-        internal static let id: Swift.String = "get/open-finance/items/user-items"
-        internal struct Input: Sendable, Hashable {
-            /// Creates a new `Input`.
-            internal init() {}
-        }
-        internal enum Output: Sendable, Hashable {
-            internal struct Ok: Sendable, Hashable {
-                /// Creates a new `Ok`.
-                internal init() {}
-            }
-            /// Lista de conexões (itemId, connectorName, connectorImageUrl, status, createdAt)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/user-items/get/responses/200`.
-            ///
-            /// HTTP response code: `200 ok`.
-            case ok(Operations.GetOpenFinanceItemsUserItems.Output.Ok)
-            /// Lista de conexões (itemId, connectorName, connectorImageUrl, status, createdAt)
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/user-items/get/responses/200`.
-            ///
-            /// HTTP response code: `200 ok`.
-            internal static var ok: Self {
-                .ok(.init())
-            }
-            /// The associated value of the enum case if `self` is `.ok`.
-            ///
-            /// - Throws: An error if `self` is not `.ok`.
-            /// - SeeAlso: `.ok`.
-            internal var ok: Operations.GetOpenFinanceItemsUserItems.Output.Ok {
-                get throws {
-                    switch self {
-                    case let .ok(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "ok",
-                            response: self
-                        )
-                    }
-                }
-            }
-            internal struct Unauthorized: Sendable, Hashable {
-                /// Creates a new `Unauthorized`.
-                internal init() {}
-            }
-            /// Não autorizado
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/user-items/get/responses/401`.
-            ///
-            /// HTTP response code: `401 unauthorized`.
-            case unauthorized(Operations.GetOpenFinanceItemsUserItems.Output.Unauthorized)
-            /// Não autorizado
-            ///
-            /// - Remark: Generated from `#/paths//open-finance/items/user-items/get/responses/401`.
-            ///
-            /// HTTP response code: `401 unauthorized`.
-            internal static var unauthorized: Self {
-                .unauthorized(.init())
-            }
-            /// The associated value of the enum case if `self` is `.unauthorized`.
-            ///
-            /// - Throws: An error if `self` is not `.unauthorized`.
-            /// - SeeAlso: `.unauthorized`.
-            internal var unauthorized: Operations.GetOpenFinanceItemsUserItems.Output.Unauthorized {
-                get throws {
-                    switch self {
-                    case let .unauthorized(response):
-                        return response
-                    default:
-                        try throwUnexpectedResponseStatus(
-                            expectedStatus: "unauthorized",
-                            response: self
-                        )
-                    }
-                }
-            }
-            /// Undocumented response.
-            ///
-            /// A response with a code that is not documented in the OpenAPI document.
-            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
-        }
-    }
     /// Cadastrar uma nova receita para o usuário logado
     ///
     /// - Remark: HTTP `POST /incomes/register`.
@@ -10279,6 +9485,1069 @@ internal enum Operations {
                     default:
                         try throwUnexpectedResponseStatus(
                             expectedStatus: "conflict",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+    }
+    /// Cartões, contas, categorias de gasto e formas de pagamento ativas do usuário
+    ///
+    /// Usado pelo app de voz para transformar o que foi falado em ids
+    ///
+    /// - Remark: HTTP `GET /expense-drafts/context`.
+    /// - Remark: Generated from `#/paths//expense-drafts/context/get`.
+    internal enum GetExpenseDraftsContext {
+        internal static let id: Swift.String = "get/expense-drafts/context"
+        internal struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/expense-drafts/context/GET/header`.
+            internal struct Headers: Sendable, Hashable {
+                internal var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetExpenseDraftsContext.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                internal init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetExpenseDraftsContext.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            internal var headers: Operations.GetExpenseDraftsContext.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            internal init(headers: Operations.GetExpenseDraftsContext.Input.Headers = .init()) {
+                self.headers = headers
+            }
+        }
+        internal enum Output: Sendable, Hashable {
+            internal struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/expense-drafts/context/GET/responses/200/content`.
+                internal enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/expense-drafts/context/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.ExpenseDraftContextResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    internal var json: Components.Schemas.ExpenseDraftContextResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                internal var body: Operations.GetExpenseDraftsContext.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                internal init(body: Operations.GetExpenseDraftsContext.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// Contexto do usuário
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/context/get/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetExpenseDraftsContext.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            internal var ok: Operations.GetExpenseDraftsContext.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Unauthorized: Sendable, Hashable {
+                /// Creates a new `Unauthorized`.
+                internal init() {}
+            }
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/context/get/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Operations.GetExpenseDraftsContext.Output.Unauthorized)
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/context/get/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            internal static var unauthorized: Self {
+                .unauthorized(.init())
+            }
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            internal var unauthorized: Operations.GetExpenseDraftsContext.Output.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        internal enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            internal init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            internal var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            internal static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Salvar um gasto falado como rascunho, para revisar depois
+    ///
+    /// Rascunho não entra em saldo, relatórios nem listagem de gastos. Os ids enviados precisam ser do usuário; combinações (ex.: cartão de débito no crédito) só são conferidas ao confirmar
+    ///
+    /// - Remark: HTTP `POST /expense-drafts/register`.
+    /// - Remark: Generated from `#/paths//expense-drafts/register/post`.
+    internal enum PostExpenseDraftsRegister {
+        internal static let id: Swift.String = "post/expense-drafts/register"
+        internal struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/expense-drafts/register/POST/header`.
+            internal struct Headers: Sendable, Hashable {
+                internal var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.PostExpenseDraftsRegister.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                internal init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.PostExpenseDraftsRegister.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            internal var headers: Operations.PostExpenseDraftsRegister.Input.Headers
+            /// - Remark: Generated from `#/paths/expense-drafts/register/POST/requestBody`.
+            internal enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/expense-drafts/register/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.ExpenseDraftInput)
+            }
+            internal var body: Operations.PostExpenseDraftsRegister.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            ///   - body:
+            internal init(
+                headers: Operations.PostExpenseDraftsRegister.Input.Headers = .init(),
+                body: Operations.PostExpenseDraftsRegister.Input.Body
+            ) {
+                self.headers = headers
+                self.body = body
+            }
+        }
+        internal enum Output: Sendable, Hashable {
+            internal struct Created: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/expense-drafts/register/POST/responses/201/content`.
+                internal enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/expense-drafts/register/POST/responses/201/content/json`.
+                    internal struct JsonPayload: Codable, Hashable, Sendable {
+                        /// - Remark: Generated from `#/paths/expense-drafts/register/POST/responses/201/content/json/draft`.
+                        internal var draft: Components.Schemas.ExpenseDraftResponse
+                        /// Creates a new `JsonPayload`.
+                        ///
+                        /// - Parameters:
+                        ///   - draft:
+                        internal init(draft: Components.Schemas.ExpenseDraftResponse) {
+                            self.draft = draft
+                        }
+                        internal enum CodingKeys: String, CodingKey {
+                            case draft
+                        }
+                    }
+                    /// - Remark: Generated from `#/paths/expense-drafts/register/POST/responses/201/content/application\/json`.
+                    case json(Operations.PostExpenseDraftsRegister.Output.Created.Body.JsonPayload)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    internal var json: Operations.PostExpenseDraftsRegister.Output.Created.Body.JsonPayload {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                internal var body: Operations.PostExpenseDraftsRegister.Output.Created.Body
+                /// Creates a new `Created`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                internal init(body: Operations.PostExpenseDraftsRegister.Output.Created.Body) {
+                    self.body = body
+                }
+            }
+            /// Rascunho salvo
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/201`.
+            ///
+            /// HTTP response code: `201 created`.
+            case created(Operations.PostExpenseDraftsRegister.Output.Created)
+            /// The associated value of the enum case if `self` is `.created`.
+            ///
+            /// - Throws: An error if `self` is not `.created`.
+            /// - SeeAlso: `.created`.
+            internal var created: Operations.PostExpenseDraftsRegister.Output.Created {
+                get throws {
+                    switch self {
+                    case let .created(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "created",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct BadRequest: Sendable, Hashable {
+                /// Creates a new `BadRequest`.
+                internal init() {}
+            }
+            /// Erro de validação (frase ausente, valor inválido...)
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/400`.
+            ///
+            /// HTTP response code: `400 badRequest`.
+            case badRequest(Operations.PostExpenseDraftsRegister.Output.BadRequest)
+            /// Erro de validação (frase ausente, valor inválido...)
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/400`.
+            ///
+            /// HTTP response code: `400 badRequest`.
+            internal static var badRequest: Self {
+                .badRequest(.init())
+            }
+            /// The associated value of the enum case if `self` is `.badRequest`.
+            ///
+            /// - Throws: An error if `self` is not `.badRequest`.
+            /// - SeeAlso: `.badRequest`.
+            internal var badRequest: Operations.PostExpenseDraftsRegister.Output.BadRequest {
+                get throws {
+                    switch self {
+                    case let .badRequest(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "badRequest",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Unauthorized: Sendable, Hashable {
+                /// Creates a new `Unauthorized`.
+                internal init() {}
+            }
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Operations.PostExpenseDraftsRegister.Output.Unauthorized)
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            internal static var unauthorized: Self {
+                .unauthorized(.init())
+            }
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            internal var unauthorized: Operations.PostExpenseDraftsRegister.Output.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Forbidden: Sendable, Hashable {
+                /// Creates a new `Forbidden`.
+                internal init() {}
+            }
+            /// Categoria, conta ou cartão de outro usuário
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Operations.PostExpenseDraftsRegister.Output.Forbidden)
+            /// Categoria, conta ou cartão de outro usuário
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            internal static var forbidden: Self {
+                .forbidden(.init())
+            }
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            internal var forbidden: Operations.PostExpenseDraftsRegister.Output.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct NotFound: Sendable, Hashable {
+                /// Creates a new `NotFound`.
+                internal init() {}
+            }
+            /// Categoria, conta, cartão ou forma de pagamento não encontrado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Operations.PostExpenseDraftsRegister.Output.NotFound)
+            /// Categoria, conta, cartão ou forma de pagamento não encontrado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            internal static var notFound: Self {
+                .notFound(.init())
+            }
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            internal var notFound: Operations.PostExpenseDraftsRegister.Output.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct UnprocessableContent: Sendable, Hashable {
+                /// Creates a new `UnprocessableContent`.
+                internal init() {}
+            }
+            /// Categoria que não é de gasto ou forma de pagamento desativada
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Operations.PostExpenseDraftsRegister.Output.UnprocessableContent)
+            /// Categoria que não é de gasto ou forma de pagamento desativada
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/register/post/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            internal static var unprocessableContent: Self {
+                .unprocessableContent(.init())
+            }
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            internal var unprocessableContent: Operations.PostExpenseDraftsRegister.Output.UnprocessableContent {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        internal enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            internal init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            internal var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            internal static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Rascunhos do usuário logado, mais recentes primeiro
+    ///
+    /// - Remark: HTTP `GET /expense-drafts/user-drafts`.
+    /// - Remark: Generated from `#/paths//expense-drafts/user-drafts/get`.
+    internal enum GetExpenseDraftsUserDrafts {
+        internal static let id: Swift.String = "get/expense-drafts/user-drafts"
+        internal struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/expense-drafts/user-drafts/GET/header`.
+            internal struct Headers: Sendable, Hashable {
+                internal var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetExpenseDraftsUserDrafts.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                internal init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetExpenseDraftsUserDrafts.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            internal var headers: Operations.GetExpenseDraftsUserDrafts.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            internal init(headers: Operations.GetExpenseDraftsUserDrafts.Input.Headers = .init()) {
+                self.headers = headers
+            }
+        }
+        internal enum Output: Sendable, Hashable {
+            internal struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/expense-drafts/user-drafts/GET/responses/200/content`.
+                internal enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/expense-drafts/user-drafts/GET/responses/200/content/json`.
+                    internal struct JsonPayload: Codable, Hashable, Sendable {
+                        /// - Remark: Generated from `#/paths/expense-drafts/user-drafts/GET/responses/200/content/json/drafts`.
+                        internal var drafts: [Components.Schemas.ExpenseDraftResponse]
+                        /// Creates a new `JsonPayload`.
+                        ///
+                        /// - Parameters:
+                        ///   - drafts:
+                        internal init(drafts: [Components.Schemas.ExpenseDraftResponse]) {
+                            self.drafts = drafts
+                        }
+                        internal enum CodingKeys: String, CodingKey {
+                            case drafts
+                        }
+                    }
+                    /// - Remark: Generated from `#/paths/expense-drafts/user-drafts/GET/responses/200/content/application\/json`.
+                    case json(Operations.GetExpenseDraftsUserDrafts.Output.Ok.Body.JsonPayload)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    internal var json: Operations.GetExpenseDraftsUserDrafts.Output.Ok.Body.JsonPayload {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                internal var body: Operations.GetExpenseDraftsUserDrafts.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                internal init(body: Operations.GetExpenseDraftsUserDrafts.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// Lista de rascunhos
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/user-drafts/get/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetExpenseDraftsUserDrafts.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            internal var ok: Operations.GetExpenseDraftsUserDrafts.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Unauthorized: Sendable, Hashable {
+                /// Creates a new `Unauthorized`.
+                internal init() {}
+            }
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/user-drafts/get/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Operations.GetExpenseDraftsUserDrafts.Output.Unauthorized)
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/user-drafts/get/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            internal static var unauthorized: Self {
+                .unauthorized(.init())
+            }
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            internal var unauthorized: Operations.GetExpenseDraftsUserDrafts.Output.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        internal enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            internal init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            internal var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            internal static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Transformar o rascunho em gasto
+    ///
+    /// Mesmas regras de /expenses/register. O gasto é criado e o rascunho apagado na mesma transação. Se faltar algo, responde 400 e o rascunho continua lá
+    ///
+    /// - Remark: HTTP `POST /expense-drafts/confirm`.
+    /// - Remark: Generated from `#/paths//expense-drafts/confirm/post`.
+    internal enum PostExpenseDraftsConfirm {
+        internal static let id: Swift.String = "post/expense-drafts/confirm"
+        internal struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/expense-drafts/confirm/POST/requestBody`.
+            internal enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/expense-drafts/confirm/POST/requestBody/content/application\/json`.
+                case json(Components.Schemas.ExpenseDraftConfirmInput)
+            }
+            internal var body: Operations.PostExpenseDraftsConfirm.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - body:
+            internal init(body: Operations.PostExpenseDraftsConfirm.Input.Body) {
+                self.body = body
+            }
+        }
+        internal enum Output: Sendable, Hashable {
+            internal struct Created: Sendable, Hashable {
+                /// Creates a new `Created`.
+                internal init() {}
+            }
+            /// Gasto registrado e rascunho removido
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/201`.
+            ///
+            /// HTTP response code: `201 created`.
+            case created(Operations.PostExpenseDraftsConfirm.Output.Created)
+            /// Gasto registrado e rascunho removido
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/201`.
+            ///
+            /// HTTP response code: `201 created`.
+            internal static var created: Self {
+                .created(.init())
+            }
+            /// The associated value of the enum case if `self` is `.created`.
+            ///
+            /// - Throws: An error if `self` is not `.created`.
+            /// - SeeAlso: `.created`.
+            internal var created: Operations.PostExpenseDraftsConfirm.Output.Created {
+                get throws {
+                    switch self {
+                    case let .created(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "created",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct BadRequest: Sendable, Hashable {
+                /// Creates a new `BadRequest`.
+                internal init() {}
+            }
+            /// Erro de validação: algum campo obrigatório do gasto ainda falta
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/400`.
+            ///
+            /// HTTP response code: `400 badRequest`.
+            case badRequest(Operations.PostExpenseDraftsConfirm.Output.BadRequest)
+            /// Erro de validação: algum campo obrigatório do gasto ainda falta
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/400`.
+            ///
+            /// HTTP response code: `400 badRequest`.
+            internal static var badRequest: Self {
+                .badRequest(.init())
+            }
+            /// The associated value of the enum case if `self` is `.badRequest`.
+            ///
+            /// - Throws: An error if `self` is not `.badRequest`.
+            /// - SeeAlso: `.badRequest`.
+            internal var badRequest: Operations.PostExpenseDraftsConfirm.Output.BadRequest {
+                get throws {
+                    switch self {
+                    case let .badRequest(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "badRequest",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Unauthorized: Sendable, Hashable {
+                /// Creates a new `Unauthorized`.
+                internal init() {}
+            }
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Operations.PostExpenseDraftsConfirm.Output.Unauthorized)
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            internal static var unauthorized: Self {
+                .unauthorized(.init())
+            }
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            internal var unauthorized: Operations.PostExpenseDraftsConfirm.Output.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Forbidden: Sendable, Hashable {
+                /// Creates a new `Forbidden`.
+                internal init() {}
+            }
+            /// O rascunho, a conta, a categoria ou o cartão pertence a outro usuário
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Operations.PostExpenseDraftsConfirm.Output.Forbidden)
+            /// O rascunho, a conta, a categoria ou o cartão pertence a outro usuário
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            internal static var forbidden: Self {
+                .forbidden(.init())
+            }
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            internal var forbidden: Operations.PostExpenseDraftsConfirm.Output.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct NotFound: Sendable, Hashable {
+                /// Creates a new `NotFound`.
+                internal init() {}
+            }
+            /// Rascunho (EXPENSE_DRAFT_NOT_FOUND), conta, categoria, forma de pagamento ou cartão não encontrado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Operations.PostExpenseDraftsConfirm.Output.NotFound)
+            /// Rascunho (EXPENSE_DRAFT_NOT_FOUND), conta, categoria, forma de pagamento ou cartão não encontrado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            internal static var notFound: Self {
+                .notFound(.init())
+            }
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            internal var notFound: Operations.PostExpenseDraftsConfirm.Output.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct UnprocessableContent: Sendable, Hashable {
+                /// Creates a new `UnprocessableContent`.
+                internal init() {}
+            }
+            /// Mesmas regras de negócio de /expenses/register
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            case unprocessableContent(Operations.PostExpenseDraftsConfirm.Output.UnprocessableContent)
+            /// Mesmas regras de negócio de /expenses/register
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/confirm/post/responses/422`.
+            ///
+            /// HTTP response code: `422 unprocessableContent`.
+            internal static var unprocessableContent: Self {
+                .unprocessableContent(.init())
+            }
+            /// The associated value of the enum case if `self` is `.unprocessableContent`.
+            ///
+            /// - Throws: An error if `self` is not `.unprocessableContent`.
+            /// - SeeAlso: `.unprocessableContent`.
+            internal var unprocessableContent: Operations.PostExpenseDraftsConfirm.Output.UnprocessableContent {
+                get throws {
+                    switch self {
+                    case let .unprocessableContent(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unprocessableContent",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+    }
+    /// Descartar um rascunho
+    ///
+    /// - Remark: HTTP `DELETE /expense-drafts/delete`.
+    /// - Remark: Generated from `#/paths//expense-drafts/delete/delete`.
+    internal enum DeleteExpenseDraftsDelete {
+        internal static let id: Swift.String = "delete/expense-drafts/delete"
+        internal struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/expense-drafts/delete/DELETE/requestBody`.
+            internal enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/expense-drafts/delete/DELETE/requestBody/content/application\/json`.
+                case json(Components.Schemas.ExpenseDraftDeleteInput)
+            }
+            internal var body: Operations.DeleteExpenseDraftsDelete.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - body:
+            internal init(body: Operations.DeleteExpenseDraftsDelete.Input.Body) {
+                self.body = body
+            }
+        }
+        internal enum Output: Sendable, Hashable {
+            internal struct Ok: Sendable, Hashable {
+                /// Creates a new `Ok`.
+                internal init() {}
+            }
+            /// Rascunho descartado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.DeleteExpenseDraftsDelete.Output.Ok)
+            /// Rascunho descartado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            internal static var ok: Self {
+                .ok(.init())
+            }
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            internal var ok: Operations.DeleteExpenseDraftsDelete.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct BadRequest: Sendable, Hashable {
+                /// Creates a new `BadRequest`.
+                internal init() {}
+            }
+            /// ID ausente ou inválido
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/400`.
+            ///
+            /// HTTP response code: `400 badRequest`.
+            case badRequest(Operations.DeleteExpenseDraftsDelete.Output.BadRequest)
+            /// ID ausente ou inválido
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/400`.
+            ///
+            /// HTTP response code: `400 badRequest`.
+            internal static var badRequest: Self {
+                .badRequest(.init())
+            }
+            /// The associated value of the enum case if `self` is `.badRequest`.
+            ///
+            /// - Throws: An error if `self` is not `.badRequest`.
+            /// - SeeAlso: `.badRequest`.
+            internal var badRequest: Operations.DeleteExpenseDraftsDelete.Output.BadRequest {
+                get throws {
+                    switch self {
+                    case let .badRequest(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "badRequest",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Unauthorized: Sendable, Hashable {
+                /// Creates a new `Unauthorized`.
+                internal init() {}
+            }
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Operations.DeleteExpenseDraftsDelete.Output.Unauthorized)
+            /// Não autorizado
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            internal static var unauthorized: Self {
+                .unauthorized(.init())
+            }
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            internal var unauthorized: Operations.DeleteExpenseDraftsDelete.Output.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Forbidden: Sendable, Hashable {
+                /// Creates a new `Forbidden`.
+                internal init() {}
+            }
+            /// O rascunho pertence a outro usuário
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Operations.DeleteExpenseDraftsDelete.Output.Forbidden)
+            /// O rascunho pertence a outro usuário
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            internal static var forbidden: Self {
+                .forbidden(.init())
+            }
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            internal var forbidden: Operations.DeleteExpenseDraftsDelete.Output.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct NotFound: Sendable, Hashable {
+                /// Creates a new `NotFound`.
+                internal init() {}
+            }
+            /// Rascunho não encontrado (EXPENSE_DRAFT_NOT_FOUND)
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            case notFound(Operations.DeleteExpenseDraftsDelete.Output.NotFound)
+            /// Rascunho não encontrado (EXPENSE_DRAFT_NOT_FOUND)
+            ///
+            /// - Remark: Generated from `#/paths//expense-drafts/delete/delete/responses/404`.
+            ///
+            /// HTTP response code: `404 notFound`.
+            internal static var notFound: Self {
+                .notFound(.init())
+            }
+            /// The associated value of the enum case if `self` is `.notFound`.
+            ///
+            /// - Throws: An error if `self` is not `.notFound`.
+            /// - SeeAlso: `.notFound`.
+            internal var notFound: Operations.DeleteExpenseDraftsDelete.Output.NotFound {
+                get throws {
+                    switch self {
+                    case let .notFound(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "notFound",
                             response: self
                         )
                     }
