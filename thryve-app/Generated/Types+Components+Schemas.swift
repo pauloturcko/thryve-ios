@@ -30,6 +30,8 @@ extension Components {
                 case cardRequired = "CARD_REQUIRED"
                 case cardDebitOnly = "CARD_DEBIT_ONLY"
                 case cardCreditOnly = "CARD_CREDIT_ONLY"
+                case cardAccountMismatch = "CARD_ACCOUNT_MISMATCH"
+                case cardLimitExceeded = "CARD_LIMIT_EXCEEDED"
                 case bankAccountAlreadyExists = "BANK_ACCOUNT_ALREADY_EXISTS"
                 case bankAccountNotFound = "BANK_ACCOUNT_NOT_FOUND"
                 case bankAccountHasTransactions = "BANK_ACCOUNT_HAS_TRANSACTIONS"
@@ -47,6 +49,7 @@ extension Components {
                 case expenseNotFound = "EXPENSE_NOT_FOUND"
                 case expenseHasRefunds = "EXPENSE_HAS_REFUNDS"
                 case installmentsRequireCredit = "INSTALLMENTS_REQUIRE_CREDIT"
+                case expenseDraftNotFound = "EXPENSE_DRAFT_NOT_FOUND"
                 case goalAlreadyExists = "GOAL_ALREADY_EXISTS"
                 case goalNotFound = "GOAL_NOT_FOUND"
                 case investmentAlreadyExists = "INVESTMENT_ALREADY_EXISTS"
@@ -58,9 +61,6 @@ extension Components {
                 case prefixedRateRequired = "PREFIXED_RATE_REQUIRED"
                 case reportNotFound = "REPORT_NOT_FOUND"
                 case reportGenerationFailed = "REPORT_GENERATION_FAILED"
-                case openFinanceNotConfigured = "OPEN_FINANCE_NOT_CONFIGURED"
-                case openFinanceProviderError = "OPEN_FINANCE_PROVIDER_ERROR"
-                case openFinanceItemNotFound = "OPEN_FINANCE_ITEM_NOT_FOUND"
             }
             /// Código estável do erro, para o front traduzir
             ///
@@ -514,6 +514,10 @@ extension Components {
             ///
             /// - Remark: Generated from `#/components/schemas/CardRegisterInput/lastFourDigits`.
             internal var lastFourDigits: Swift.String
+            /// Conta vinculada (opcional). Uma conta pode ter vários cartões. No débito, o gasto sai dela automaticamente; no crédito, identifica a instituição
+            ///
+            /// - Remark: Generated from `#/components/schemas/CardRegisterInput/bankAccountId`.
+            internal var bankAccountId: Swift.Int?
             /// Creates a new `CardRegisterInput`.
             ///
             /// - Parameters:
@@ -523,13 +527,15 @@ extension Components {
             ///   - limit: Limite do cartão (mínimo 100). Aceita '5000.00' ou formato BR '5.000,00'. Obrigatório para crédito (1) e crédito e débito (3). No débito (2) é ignorado e salvo como null
             ///   - expiresIn: Validade no formato MM/YY
             ///   - lastFourDigits: 4 últimos dígitos do cartão
+            ///   - bankAccountId: Conta vinculada (opcional). Uma conta pode ter vários cartões. No débito, o gasto sai dela automaticamente; no crédito, identifica a instituição
             internal init(
                 name: Swift.String,
                 cardType: Components.Schemas.CardRegisterInput.CardTypePayload,
                 cardFlag: Components.Schemas.CardRegisterInput.CardFlagPayload,
                 limit: Swift.String? = nil,
                 expiresIn: Swift.String,
-                lastFourDigits: Swift.String
+                lastFourDigits: Swift.String,
+                bankAccountId: Swift.Int? = nil
             ) {
                 self.name = name
                 self.cardType = cardType
@@ -537,6 +543,7 @@ extension Components {
                 self.limit = limit
                 self.expiresIn = expiresIn
                 self.lastFourDigits = lastFourDigits
+                self.bankAccountId = bankAccountId
             }
             internal enum CodingKeys: String, CodingKey {
                 case name
@@ -545,6 +552,7 @@ extension Components {
                 case limit
                 case expiresIn
                 case lastFourDigits
+                case bankAccountId
             }
         }
         /// - Remark: Generated from `#/components/schemas/CardUpdateInput`.
@@ -585,6 +593,10 @@ extension Components {
             ///
             /// - Remark: Generated from `#/components/schemas/CardUpdateInput/lastFourDigits`.
             internal var lastFourDigits: Swift.String?
+            /// Nova conta vinculada, ou null para desvincular (Opcional). Vale só para gastos novos: os já lançados continuam na conta em que foram feitos
+            ///
+            /// - Remark: Generated from `#/components/schemas/CardUpdateInput/bankAccountId`.
+            internal var bankAccountId: Swift.Int?
             /// Creates a new `CardUpdateInput`.
             ///
             /// - Parameters:
@@ -595,6 +607,7 @@ extension Components {
             ///   - limit: Novo limite (Opcional). Se o cartão ficar só débito, o limite é zerado para null. Se ficar com crédito, precisa ter limite
             ///   - expiresIn: Nova data de expiração (Opcional)
             ///   - lastFourDigits: Últimos 4 dígitos (Opcional)
+            ///   - bankAccountId: Nova conta vinculada, ou null para desvincular (Opcional). Vale só para gastos novos: os já lançados continuam na conta em que foram feitos
             internal init(
                 id: Swift.Int,
                 name: Swift.String? = nil,
@@ -602,7 +615,8 @@ extension Components {
                 cardFlag: Swift.String? = nil,
                 limit: Swift.String? = nil,
                 expiresIn: Swift.String? = nil,
-                lastFourDigits: Swift.String? = nil
+                lastFourDigits: Swift.String? = nil,
+                bankAccountId: Swift.Int? = nil
             ) {
                 self.id = id
                 self.name = name
@@ -611,6 +625,7 @@ extension Components {
                 self.limit = limit
                 self.expiresIn = expiresIn
                 self.lastFourDigits = lastFourDigits
+                self.bankAccountId = bankAccountId
             }
             internal enum CodingKeys: String, CodingKey {
                 case id
@@ -620,6 +635,7 @@ extension Components {
                 case limit
                 case expiresIn
                 case lastFourDigits
+                case bankAccountId
             }
         }
         /// - Remark: Generated from `#/components/schemas/CardDeleteInput`.
@@ -663,25 +679,33 @@ extension Components {
             ///
             /// - Remark: Generated from `#/components/schemas/BankAccountRegisterInput/balance`.
             internal var balance: Swift.String?
+            /// Data em que o saldo informado vale (AAAA-MM-DD), na data local de quem cadastra (opcional; padrão: hoje no horário de Brasília). Lançamentos a partir dela mexem no saldo; os anteriores já estão nele. Não pode ser alterada depois
+            ///
+            /// - Remark: Generated from `#/components/schemas/BankAccountRegisterInput/balanceDate`.
+            internal var balanceDate: Swift.String?
             /// Creates a new `BankAccountRegisterInput`.
             ///
             /// - Parameters:
             ///   - name: Nome da conta (mínimo de 3 caracteres)
             ///   - accountType: 0 = Conta digital, 1 = Conta corrente, 2 = Poupança, 3 = Carteira digital, 4 = Dinheiro
             ///   - balance: Saldo inicial (padrão 0.00). Aceita negativo e os formatos '5000.00', '5.000,00' ou '5,000.00'
+            ///   - balanceDate: Data em que o saldo informado vale (AAAA-MM-DD), na data local de quem cadastra (opcional; padrão: hoje no horário de Brasília). Lançamentos a partir dela mexem no saldo; os anteriores já estão nele. Não pode ser alterada depois
             internal init(
                 name: Swift.String,
                 accountType: Components.Schemas.BankAccountRegisterInput.AccountTypePayload,
-                balance: Swift.String? = nil
+                balance: Swift.String? = nil,
+                balanceDate: Swift.String? = nil
             ) {
                 self.name = name
                 self.accountType = accountType
                 self.balance = balance
+                self.balanceDate = balanceDate
             }
             internal enum CodingKeys: String, CodingKey {
                 case name
                 case accountType
                 case balance
+                case balanceDate
             }
         }
         /// - Remark: Generated from `#/components/schemas/BankAccountUpdateInput`.
@@ -1561,40 +1585,6 @@ extension Components {
                 case id
             }
         }
-        /// - Remark: Generated from `#/components/schemas/OpenFinanceConnectTokenInput`.
-        internal struct OpenFinanceConnectTokenInput: Codable, Hashable, Sendable {
-            /// Opcional. Id de uma conexão já salva, para o widget atualizá-la (prop updateItem)
-            ///
-            /// - Remark: Generated from `#/components/schemas/OpenFinanceConnectTokenInput/itemId`.
-            internal var itemId: Swift.String?
-            /// Creates a new `OpenFinanceConnectTokenInput`.
-            ///
-            /// - Parameters:
-            ///   - itemId: Opcional. Id de uma conexão já salva, para o widget atualizá-la (prop updateItem)
-            internal init(itemId: Swift.String? = nil) {
-                self.itemId = itemId
-            }
-            internal enum CodingKeys: String, CodingKey {
-                case itemId
-            }
-        }
-        /// - Remark: Generated from `#/components/schemas/OpenFinanceRegisterItemInput`.
-        internal struct OpenFinanceRegisterItemInput: Codable, Hashable, Sendable {
-            /// item.id recebido no onSuccess do Pluggy Connect
-            ///
-            /// - Remark: Generated from `#/components/schemas/OpenFinanceRegisterItemInput/itemId`.
-            internal var itemId: Swift.String
-            /// Creates a new `OpenFinanceRegisterItemInput`.
-            ///
-            /// - Parameters:
-            ///   - itemId: item.id recebido no onSuccess do Pluggy Connect
-            internal init(itemId: Swift.String) {
-                self.itemId = itemId
-            }
-            internal enum CodingKeys: String, CodingKey {
-                case itemId
-            }
-        }
         /// - Remark: Generated from `#/components/schemas/IncomeRegisterInput`.
         internal struct IncomeRegisterInput: Codable, Hashable, Sendable {
             /// 0 = Recorrente, 1 = Pontual, 2 = Reembolso
@@ -1841,10 +1831,10 @@ extension Components {
             ///
             /// - Remark: Generated from `#/components/schemas/ExpenseRegisterInput/paymentMethodId`.
             internal var paymentMethodId: Swift.Int
-            /// ID da conta do usuário de onde o valor sai
+            /// Conta do gasto. Obrigatória, exceto quando o cartão tem conta vinculada: aí a conta é a do cartão (outra conta responde 422 CARD_ACCOUNT_MISMATCH). Só Pix, boleto, dinheiro e débito pagos descontam do saldo; crédito nunca desconta
             ///
             /// - Remark: Generated from `#/components/schemas/ExpenseRegisterInput/bankAccountId`.
-            internal var bankAccountId: Swift.Int
+            internal var bankAccountId: Swift.Int?
             /// ID do cartão do usuário. Obrigatório quando a forma de pagamento é crédito ou débito
             ///
             /// - Remark: Generated from `#/components/schemas/ExpenseRegisterInput/cardId`.
@@ -1887,7 +1877,7 @@ extension Components {
             ///   - categoryId: ID de uma categoria de gasto do usuário
             ///   - description: O que é o gasto, mais específico que a categoria (até 150 caracteres)
             ///   - paymentMethodId: ID de uma forma de pagamento ativa nas preferências do usuário
-            ///   - bankAccountId: ID da conta do usuário de onde o valor sai
+            ///   - bankAccountId: Conta do gasto. Obrigatória, exceto quando o cartão tem conta vinculada: aí a conta é a do cartão (outra conta responde 422 CARD_ACCOUNT_MISMATCH). Só Pix, boleto, dinheiro e débito pagos descontam do saldo; crédito nunca desconta
             ///   - cardId: ID do cartão do usuário. Obrigatório quando a forma de pagamento é crédito ou débito
             ///   - amount: Valor total, maior que zero. No parcelado, é dividido entre as parcelas
             ///   - date: Data prevista ou de pagamento, no formato AAAA-MM-DD. No parcelado, é a data da primeira parcela
@@ -1900,7 +1890,7 @@ extension Components {
                 categoryId: Swift.Int,
                 description: Swift.String,
                 paymentMethodId: Swift.Int,
-                bankAccountId: Swift.Int,
+                bankAccountId: Swift.Int? = nil,
                 cardId: Swift.Int? = nil,
                 amount: Swift.String,
                 date: Swift.String,
@@ -1966,7 +1956,7 @@ extension Components {
             ///
             /// - Remark: Generated from `#/components/schemas/ExpenseUpdateInput/paymentMethodId`.
             internal var paymentMethodId: Swift.Int?
-            /// Nova conta (Opcional). Se o gasto for pago, o valor volta para a conta antiga e sai da nova
+            /// Nova conta (Opcional). Com cartão vinculado, só a conta do cartão é aceita. Se o gasto for pago (e não for crédito), o valor volta para a conta antiga e sai da nova
             ///
             /// - Remark: Generated from `#/components/schemas/ExpenseUpdateInput/bankAccountId`.
             internal var bankAccountId: Swift.Int?
@@ -2009,7 +1999,7 @@ extension Components {
             ///   - categoryId: Nova categoria de gasto (Opcional)
             ///   - description: Nova descrição (Opcional)
             ///   - paymentMethodId: Nova forma de pagamento (Opcional)
-            ///   - bankAccountId: Nova conta (Opcional). Se o gasto for pago, o valor volta para a conta antiga e sai da nova
+            ///   - bankAccountId: Nova conta (Opcional). Com cartão vinculado, só a conta do cartão é aceita. Se o gasto for pago (e não for crédito), o valor volta para a conta antiga e sai da nova
             ///   - cardId: Novo cartão (Opcional)
             ///   - amount: Novo valor desta parcela (Opcional)
             ///   - date: Nova data, no formato AAAA-MM-DD (Opcional)
@@ -2068,6 +2058,469 @@ extension Components {
             ///
             /// - Parameters:
             ///   - id: ID do gasto a ser removido. No parcelado, remove só essa parcela
+            internal init(id: Swift.Int) {
+                self.id = id
+            }
+            internal enum CodingKeys: String, CodingKey {
+                case id
+            }
+        }
+        /// O que o app precisa para ligar o que foi falado ("cartão do C6", "mercado") a um id
+        ///
+        /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse`.
+        internal struct ExpenseDraftContextResponse: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CardsPayload`.
+            internal struct CardsPayloadPayload: Codable, Hashable, Sendable {
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CardsPayload/id`.
+                internal var id: Swift.Int
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CardsPayload/name`.
+                internal var name: Swift.String
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CardsPayload/lastFourDigits`.
+                internal var lastFourDigits: Swift.String
+                /// Mesmo enum de /cards
+                ///
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CardsPayload/cardType`.
+                internal var cardType: Swift.Int
+                /// Creates a new `CardsPayloadPayload`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                ///   - name:
+                ///   - lastFourDigits:
+                ///   - cardType: Mesmo enum de /cards
+                internal init(
+                    id: Swift.Int,
+                    name: Swift.String,
+                    lastFourDigits: Swift.String,
+                    cardType: Swift.Int
+                ) {
+                    self.id = id
+                    self.name = name
+                    self.lastFourDigits = lastFourDigits
+                    self.cardType = cardType
+                }
+                internal enum CodingKeys: String, CodingKey {
+                    case id
+                    case name
+                    case lastFourDigits
+                    case cardType
+                }
+            }
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/cards`.
+            internal typealias CardsPayload = [Components.Schemas.ExpenseDraftContextResponse.CardsPayloadPayload]
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/cards`.
+            internal var cards: Components.Schemas.ExpenseDraftContextResponse.CardsPayload
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/BankAccountsPayload`.
+            internal struct BankAccountsPayloadPayload: Codable, Hashable, Sendable {
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/BankAccountsPayload/id`.
+                internal var id: Swift.Int
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/BankAccountsPayload/name`.
+                internal var name: Swift.String
+                /// Mesmo enum de /bank-accounts
+                ///
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/BankAccountsPayload/accountType`.
+                internal var accountType: Swift.Int
+                /// Creates a new `BankAccountsPayloadPayload`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                ///   - name:
+                ///   - accountType: Mesmo enum de /bank-accounts
+                internal init(
+                    id: Swift.Int,
+                    name: Swift.String,
+                    accountType: Swift.Int
+                ) {
+                    self.id = id
+                    self.name = name
+                    self.accountType = accountType
+                }
+                internal enum CodingKeys: String, CodingKey {
+                    case id
+                    case name
+                    case accountType
+                }
+            }
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/bankAccounts`.
+            internal typealias BankAccountsPayload = [Components.Schemas.ExpenseDraftContextResponse.BankAccountsPayloadPayload]
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/bankAccounts`.
+            internal var bankAccounts: Components.Schemas.ExpenseDraftContextResponse.BankAccountsPayload
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CategoriesPayload`.
+            internal struct CategoriesPayloadPayload: Codable, Hashable, Sendable {
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CategoriesPayload/id`.
+                internal var id: Swift.Int
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CategoriesPayload/name`.
+                internal var name: Swift.String
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CategoriesPayload/icon`.
+                internal var icon: Swift.String
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/CategoriesPayload/color`.
+                internal var color: Swift.String
+                /// Creates a new `CategoriesPayloadPayload`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                ///   - name:
+                ///   - icon:
+                ///   - color:
+                internal init(
+                    id: Swift.Int,
+                    name: Swift.String,
+                    icon: Swift.String,
+                    color: Swift.String
+                ) {
+                    self.id = id
+                    self.name = name
+                    self.icon = icon
+                    self.color = color
+                }
+                internal enum CodingKeys: String, CodingKey {
+                    case id
+                    case name
+                    case icon
+                    case color
+                }
+            }
+            /// Só categorias de gasto
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/categories`.
+            internal typealias CategoriesPayload = [Components.Schemas.ExpenseDraftContextResponse.CategoriesPayloadPayload]
+            /// Só categorias de gasto
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/categories`.
+            internal var categories: Components.Schemas.ExpenseDraftContextResponse.CategoriesPayload
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/PaymentMethodsPayload`.
+            internal struct PaymentMethodsPayloadPayload: Codable, Hashable, Sendable {
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/PaymentMethodsPayload/id`.
+                internal var id: Swift.Int
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/PaymentMethodsPayload/name`.
+                internal var name: Swift.String
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/PaymentMethodsPayload/slug`.
+                internal var slug: Swift.String
+                /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/PaymentMethodsPayload/requiresCard`.
+                internal var requiresCard: Swift.Bool
+                /// Creates a new `PaymentMethodsPayloadPayload`.
+                ///
+                /// - Parameters:
+                ///   - id:
+                ///   - name:
+                ///   - slug:
+                ///   - requiresCard:
+                internal init(
+                    id: Swift.Int,
+                    name: Swift.String,
+                    slug: Swift.String,
+                    requiresCard: Swift.Bool
+                ) {
+                    self.id = id
+                    self.name = name
+                    self.slug = slug
+                    self.requiresCard = requiresCard
+                }
+                internal enum CodingKeys: String, CodingKey {
+                    case id
+                    case name
+                    case slug
+                    case requiresCard
+                }
+            }
+            /// Só as formas de pagamento ativas nas preferências do usuário
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/paymentMethods`.
+            internal typealias PaymentMethodsPayload = [Components.Schemas.ExpenseDraftContextResponse.PaymentMethodsPayloadPayload]
+            /// Só as formas de pagamento ativas nas preferências do usuário
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftContextResponse/paymentMethods`.
+            internal var paymentMethods: Components.Schemas.ExpenseDraftContextResponse.PaymentMethodsPayload
+            /// Creates a new `ExpenseDraftContextResponse`.
+            ///
+            /// - Parameters:
+            ///   - cards:
+            ///   - bankAccounts:
+            ///   - categories: Só categorias de gasto
+            ///   - paymentMethods: Só as formas de pagamento ativas nas preferências do usuário
+            internal init(
+                cards: Components.Schemas.ExpenseDraftContextResponse.CardsPayload,
+                bankAccounts: Components.Schemas.ExpenseDraftContextResponse.BankAccountsPayload,
+                categories: Components.Schemas.ExpenseDraftContextResponse.CategoriesPayload,
+                paymentMethods: Components.Schemas.ExpenseDraftContextResponse.PaymentMethodsPayload
+            ) {
+                self.cards = cards
+                self.bankAccounts = bankAccounts
+                self.categories = categories
+                self.paymentMethods = paymentMethods
+            }
+            internal enum CodingKeys: String, CodingKey {
+                case cards
+                case bankAccounts
+                case categories
+                case paymentMethods
+            }
+        }
+        /// Só a frase é obrigatória. O resto é o que deu para entender dela
+        ///
+        /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput`.
+        internal struct ExpenseDraftInput: Codable, Hashable, Sendable {
+            /// A frase falada, como foi transcrita (até 500 caracteres)
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/transcript`.
+            internal var transcript: Swift.String
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/description`.
+            internal var description: Swift.String?
+            /// Aceita formato BR ou US
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/amount`.
+            internal var amount: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/date`.
+            internal var date: Swift.String?
+            /// 0 = fixo, 1 = variável
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/expenseKind`.
+            internal enum ExpenseKindPayload: Int, Codable, Hashable, Sendable, CaseIterable {
+                case _0 = 0
+                case _1 = 1
+            }
+            /// 0 = fixo, 1 = variável
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/expenseKind`.
+            internal var expenseKind: Components.Schemas.ExpenseDraftInput.ExpenseKindPayload?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/categoryId`.
+            internal var categoryId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/bankAccountId`.
+            internal var bankAccountId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/paymentMethodId`.
+            internal var paymentMethodId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftInput/cardId`.
+            internal var cardId: Swift.Int?
+            /// Creates a new `ExpenseDraftInput`.
+            ///
+            /// - Parameters:
+            ///   - transcript: A frase falada, como foi transcrita (até 500 caracteres)
+            ///   - description:
+            ///   - amount: Aceita formato BR ou US
+            ///   - date:
+            ///   - expenseKind: 0 = fixo, 1 = variável
+            ///   - categoryId:
+            ///   - bankAccountId:
+            ///   - paymentMethodId:
+            ///   - cardId:
+            internal init(
+                transcript: Swift.String,
+                description: Swift.String? = nil,
+                amount: Swift.String? = nil,
+                date: Swift.String? = nil,
+                expenseKind: Components.Schemas.ExpenseDraftInput.ExpenseKindPayload? = nil,
+                categoryId: Swift.Int? = nil,
+                bankAccountId: Swift.Int? = nil,
+                paymentMethodId: Swift.Int? = nil,
+                cardId: Swift.Int? = nil
+            ) {
+                self.transcript = transcript
+                self.description = description
+                self.amount = amount
+                self.date = date
+                self.expenseKind = expenseKind
+                self.categoryId = categoryId
+                self.bankAccountId = bankAccountId
+                self.paymentMethodId = paymentMethodId
+                self.cardId = cardId
+            }
+            internal enum CodingKeys: String, CodingKey {
+                case transcript
+                case description
+                case amount
+                case date
+                case expenseKind
+                case categoryId
+                case bankAccountId
+                case paymentMethodId
+                case cardId
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse`.
+        internal struct ExpenseDraftResponse: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/id`.
+            internal var id: Swift.Int
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/transcript`.
+            internal var transcript: Swift.String
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/description`.
+            internal var description: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/amount`.
+            internal var amount: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/date`.
+            internal var date: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/expenseKind`.
+            internal enum ExpenseKindPayload: Int, Codable, Hashable, Sendable, CaseIterable {
+                case _0 = 0
+                case _1 = 1
+            }
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/expenseKind`.
+            internal var expenseKind: Components.Schemas.ExpenseDraftResponse.ExpenseKindPayload?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/categoryId`.
+            internal var categoryId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/bankAccountId`.
+            internal var bankAccountId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/paymentMethodId`.
+            internal var paymentMethodId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/cardId`.
+            internal var cardId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/createdAt`.
+            internal var createdAt: Foundation.Date
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftResponse/updatedAt`.
+            internal var updatedAt: Foundation.Date?
+            /// Creates a new `ExpenseDraftResponse`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - transcript:
+            ///   - description:
+            ///   - amount:
+            ///   - date:
+            ///   - expenseKind:
+            ///   - categoryId:
+            ///   - bankAccountId:
+            ///   - paymentMethodId:
+            ///   - cardId:
+            ///   - createdAt:
+            ///   - updatedAt:
+            internal init(
+                id: Swift.Int,
+                transcript: Swift.String,
+                description: Swift.String? = nil,
+                amount: Swift.String? = nil,
+                date: Swift.String? = nil,
+                expenseKind: Components.Schemas.ExpenseDraftResponse.ExpenseKindPayload? = nil,
+                categoryId: Swift.Int? = nil,
+                bankAccountId: Swift.Int? = nil,
+                paymentMethodId: Swift.Int? = nil,
+                cardId: Swift.Int? = nil,
+                createdAt: Foundation.Date,
+                updatedAt: Foundation.Date? = nil
+            ) {
+                self.id = id
+                self.transcript = transcript
+                self.description = description
+                self.amount = amount
+                self.date = date
+                self.expenseKind = expenseKind
+                self.categoryId = categoryId
+                self.bankAccountId = bankAccountId
+                self.paymentMethodId = paymentMethodId
+                self.cardId = cardId
+                self.createdAt = createdAt
+                self.updatedAt = updatedAt
+            }
+            internal enum CodingKeys: String, CodingKey {
+                case id
+                case transcript
+                case description
+                case amount
+                case date
+                case expenseKind
+                case categoryId
+                case bankAccountId
+                case paymentMethodId
+                case cardId
+                case createdAt
+                case updatedAt
+            }
+        }
+        /// draftId + os campos de ExpenseRegisterInput. O que não vier é completado com o que o rascunho já tem
+        ///
+        /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput`.
+        internal struct ExpenseDraftConfirmInput: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/draftId`.
+            internal var draftId: Swift.Int
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/expenseKind`.
+            internal enum ExpenseKindPayload: Int, Codable, Hashable, Sendable, CaseIterable {
+                case _0 = 0
+                case _1 = 1
+            }
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/expenseKind`.
+            internal var expenseKind: Components.Schemas.ExpenseDraftConfirmInput.ExpenseKindPayload?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/bankAccountId`.
+            internal var bankAccountId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/categoryId`.
+            internal var categoryId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/paymentMethodId`.
+            internal var paymentMethodId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/cardId`.
+            internal var cardId: Swift.Int?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/description`.
+            internal var description: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/amount`.
+            internal var amount: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/date`.
+            internal var date: Swift.String?
+            /// 0 = pendente (não pago), 1 = pago
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/status`.
+            internal enum StatusPayload: Int, Codable, Hashable, Sendable, CaseIterable {
+                case _0 = 0
+                case _1 = 1
+            }
+            /// 0 = pendente (não pago), 1 = pago
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftConfirmInput/status`.
+            internal var status: Components.Schemas.ExpenseDraftConfirmInput.StatusPayload?
+            /// Creates a new `ExpenseDraftConfirmInput`.
+            ///
+            /// - Parameters:
+            ///   - draftId:
+            ///   - expenseKind:
+            ///   - bankAccountId:
+            ///   - categoryId:
+            ///   - paymentMethodId:
+            ///   - cardId:
+            ///   - description:
+            ///   - amount:
+            ///   - date:
+            ///   - status: 0 = pendente (não pago), 1 = pago
+            internal init(
+                draftId: Swift.Int,
+                expenseKind: Components.Schemas.ExpenseDraftConfirmInput.ExpenseKindPayload? = nil,
+                bankAccountId: Swift.Int? = nil,
+                categoryId: Swift.Int? = nil,
+                paymentMethodId: Swift.Int? = nil,
+                cardId: Swift.Int? = nil,
+                description: Swift.String? = nil,
+                amount: Swift.String? = nil,
+                date: Swift.String? = nil,
+                status: Components.Schemas.ExpenseDraftConfirmInput.StatusPayload? = nil
+            ) {
+                self.draftId = draftId
+                self.expenseKind = expenseKind
+                self.bankAccountId = bankAccountId
+                self.categoryId = categoryId
+                self.paymentMethodId = paymentMethodId
+                self.cardId = cardId
+                self.description = description
+                self.amount = amount
+                self.date = date
+                self.status = status
+            }
+            internal enum CodingKeys: String, CodingKey {
+                case draftId
+                case expenseKind
+                case bankAccountId
+                case categoryId
+                case paymentMethodId
+                case cardId
+                case description
+                case amount
+                case date
+                case status
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/ExpenseDraftDeleteInput`.
+        internal struct ExpenseDraftDeleteInput: Codable, Hashable, Sendable {
+            /// ID do rascunho a descartar
+            ///
+            /// - Remark: Generated from `#/components/schemas/ExpenseDraftDeleteInput/id`.
+            internal var id: Swift.Int
+            /// Creates a new `ExpenseDraftDeleteInput`.
+            ///
+            /// - Parameters:
+            ///   - id: ID do rascunho a descartar
             internal init(id: Swift.Int) {
                 self.id = id
             }

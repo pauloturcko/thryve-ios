@@ -571,6 +571,8 @@ internal struct Client: APIProtocol {
     }
     /// Listar todos os cartões do usuário logado
     ///
+    /// Cada cartão traz bankAccount (conta vinculada, ou null), usedLimit (compras no crédito ainda pendentes) e availableLimit (limit - usedLimit). Cartão só de débito tem os dois como null
+    ///
     /// - Remark: HTTP `GET /cards/user-cards`.
     /// - Remark: Generated from `#/paths//cards/user-cards/get`.
     internal func getCardsUserCards(_ input: Operations.GetCardsUserCards.Input) async throws -> Operations.GetCardsUserCards.Output {
@@ -2272,218 +2274,6 @@ internal struct Client: APIProtocol {
             }
         )
     }
-    /// Gerar o Connect Token para abrir o widget Pluggy Connect
-    ///
-    /// Responde { accessToken }, válido por 30 minutos. O clientUserId enviado ao Pluggy é o id do usuário logado
-    ///
-    /// - Remark: HTTP `POST /open-finance/connect-token`.
-    /// - Remark: Generated from `#/paths//open-finance/connect-token/post`.
-    internal func postOpenFinanceConnectToken(_ input: Operations.PostOpenFinanceConnectToken.Input) async throws -> Operations.PostOpenFinanceConnectToken.Output {
-        try await client.send(
-            input: input,
-            forOperation: Operations.PostOpenFinanceConnectToken.id,
-            serializer: { input in
-                let path = try converter.renderedPath(
-                    template: "/open-finance/connect-token",
-                    parameters: []
-                )
-                var request: HTTPTypes.HTTPRequest = .init(
-                    soar_path: path,
-                    method: .post
-                )
-                suppressMutabilityWarning(&request)
-                let body: OpenAPIRuntime.HTTPBody?
-                switch input.body {
-                case .none:
-                    body = nil
-                case let .json(value):
-                    body = try converter.setOptionalRequestBodyAsJSON(
-                        value,
-                        headerFields: &request.headerFields,
-                        contentType: "application/json; charset=utf-8"
-                    )
-                }
-                return (request, body)
-            },
-            deserializer: { response, responseBody in
-                switch response.status.code {
-                case 200:
-                    return .ok(.init())
-                case 400:
-                    return .badRequest(.init())
-                case 401:
-                    return .unauthorized(.init())
-                case 403:
-                    return .forbidden(.init())
-                case 404:
-                    return .notFound(.init())
-                case 500:
-                    return .internalServerError(.init())
-                default:
-                    return .undocumented(
-                        statusCode: response.status.code,
-                        .init(
-                            headerFields: response.headerFields,
-                            body: responseBody
-                        )
-                    )
-                }
-            }
-        )
-    }
-    /// Salvar a conexão criada pelo widget (onSuccess)
-    ///
-    /// Busca o Item no Pluggy e só salva se ele foi criado com um token deste usuário. Salvar o mesmo itemId de novo atualiza o registro
-    ///
-    /// - Remark: HTTP `POST /open-finance/items/register`.
-    /// - Remark: Generated from `#/paths//open-finance/items/register/post`.
-    internal func postOpenFinanceItemsRegister(_ input: Operations.PostOpenFinanceItemsRegister.Input) async throws -> Operations.PostOpenFinanceItemsRegister.Output {
-        try await client.send(
-            input: input,
-            forOperation: Operations.PostOpenFinanceItemsRegister.id,
-            serializer: { input in
-                let path = try converter.renderedPath(
-                    template: "/open-finance/items/register",
-                    parameters: []
-                )
-                var request: HTTPTypes.HTTPRequest = .init(
-                    soar_path: path,
-                    method: .post
-                )
-                suppressMutabilityWarning(&request)
-                let body: OpenAPIRuntime.HTTPBody?
-                switch input.body {
-                case let .json(value):
-                    body = try converter.setRequiredRequestBodyAsJSON(
-                        value,
-                        headerFields: &request.headerFields,
-                        contentType: "application/json; charset=utf-8"
-                    )
-                }
-                return (request, body)
-            },
-            deserializer: { response, responseBody in
-                switch response.status.code {
-                case 201:
-                    return .created(.init())
-                case 400:
-                    return .badRequest(.init())
-                case 401:
-                    return .unauthorized(.init())
-                case 403:
-                    return .forbidden(.init())
-                case 404:
-                    return .notFound(.init())
-                case 500:
-                    return .internalServerError(.init())
-                default:
-                    return .undocumented(
-                        statusCode: response.status.code,
-                        .init(
-                            headerFields: response.headerFields,
-                            body: responseBody
-                        )
-                    )
-                }
-            }
-        )
-    }
-    /// Receber webhooks do Pluggy (chamado pelo Pluggy, não pelo front)
-    ///
-    /// Rota pública, autenticada pela assinatura X-Pluggy-Signature (HMAC-SHA256 de "<t>.<corpo bruto>" com PLUGGY_WEBHOOK_SECRET; timestamp com até 5 min). Responde 2XX na hora e processa depois. Eventos repetidos (mesmo eventId) são ignorados. Tratados: item/created, item/updated, item/login_succeeded e item/error (sincroniza a conexão com o Pluggy) e item/deleted (remove a conexão). Os demais ficam só registrados em pluggy_webhook_events
-    ///
-    /// - Remark: HTTP `POST /open-finance/webhooks/pluggy`.
-    /// - Remark: Generated from `#/paths//open-finance/webhooks/pluggy/post`.
-    internal func postOpenFinanceWebhooksPluggy(_ input: Operations.PostOpenFinanceWebhooksPluggy.Input) async throws -> Operations.PostOpenFinanceWebhooksPluggy.Output {
-        try await client.send(
-            input: input,
-            forOperation: Operations.PostOpenFinanceWebhooksPluggy.id,
-            serializer: { input in
-                let path = try converter.renderedPath(
-                    template: "/open-finance/webhooks/pluggy",
-                    parameters: []
-                )
-                var request: HTTPTypes.HTTPRequest = .init(
-                    soar_path: path,
-                    method: .post
-                )
-                suppressMutabilityWarning(&request)
-                try converter.setHeaderFieldAsURI(
-                    in: &request.headerFields,
-                    name: "X-Pluggy-Signature",
-                    value: input.headers.xPluggySignature
-                )
-                let body: OpenAPIRuntime.HTTPBody?
-                switch input.body {
-                case let .json(value):
-                    body = try converter.setRequiredRequestBodyAsJSON(
-                        value,
-                        headerFields: &request.headerFields,
-                        contentType: "application/json; charset=utf-8"
-                    )
-                }
-                return (request, body)
-            },
-            deserializer: { response, responseBody in
-                switch response.status.code {
-                case 200:
-                    return .ok(.init())
-                case 400:
-                    return .badRequest(.init())
-                case 401:
-                    return .unauthorized(.init())
-                case 500:
-                    return .internalServerError(.init())
-                default:
-                    return .undocumented(
-                        statusCode: response.status.code,
-                        .init(
-                            headerFields: response.headerFields,
-                            body: responseBody
-                        )
-                    )
-                }
-            }
-        )
-    }
-    /// Listar as conexões Open Finance do usuário logado
-    ///
-    /// - Remark: HTTP `GET /open-finance/items/user-items`.
-    /// - Remark: Generated from `#/paths//open-finance/items/user-items/get`.
-    internal func getOpenFinanceItemsUserItems(_ input: Operations.GetOpenFinanceItemsUserItems.Input) async throws -> Operations.GetOpenFinanceItemsUserItems.Output {
-        try await client.send(
-            input: input,
-            forOperation: Operations.GetOpenFinanceItemsUserItems.id,
-            serializer: { input in
-                let path = try converter.renderedPath(
-                    template: "/open-finance/items/user-items",
-                    parameters: []
-                )
-                var request: HTTPTypes.HTTPRequest = .init(
-                    soar_path: path,
-                    method: .get
-                )
-                suppressMutabilityWarning(&request)
-                return (request, nil)
-            },
-            deserializer: { response, responseBody in
-                switch response.status.code {
-                case 200:
-                    return .ok(.init())
-                case 401:
-                    return .unauthorized(.init())
-                default:
-                    return .undocumented(
-                        statusCode: response.status.code,
-                        .init(
-                            headerFields: response.headerFields,
-                            body: responseBody
-                        )
-                    )
-                }
-            }
-        )
-    }
     /// Cadastrar uma nova receita para o usuário logado
     ///
     /// - Remark: HTTP `POST /incomes/register`.
@@ -2943,6 +2733,323 @@ internal struct Client: APIProtocol {
                     return .notFound(.init())
                 case 409:
                     return .conflict(.init())
+                default:
+                    return .undocumented(
+                        statusCode: response.status.code,
+                        .init(
+                            headerFields: response.headerFields,
+                            body: responseBody
+                        )
+                    )
+                }
+            }
+        )
+    }
+    /// Cartões, contas, categorias de gasto e formas de pagamento ativas do usuário
+    ///
+    /// Usado pelo app de voz para transformar o que foi falado em ids
+    ///
+    /// - Remark: HTTP `GET /expense-drafts/context`.
+    /// - Remark: Generated from `#/paths//expense-drafts/context/get`.
+    internal func getExpenseDraftsContext(_ input: Operations.GetExpenseDraftsContext.Input) async throws -> Operations.GetExpenseDraftsContext.Output {
+        try await client.send(
+            input: input,
+            forOperation: Operations.GetExpenseDraftsContext.id,
+            serializer: { input in
+                let path = try converter.renderedPath(
+                    template: "/expense-drafts/context",
+                    parameters: []
+                )
+                var request: HTTPTypes.HTTPRequest = .init(
+                    soar_path: path,
+                    method: .get
+                )
+                suppressMutabilityWarning(&request)
+                converter.setAcceptHeader(
+                    in: &request.headerFields,
+                    contentTypes: input.headers.accept
+                )
+                return (request, nil)
+            },
+            deserializer: { response, responseBody in
+                switch response.status.code {
+                case 200:
+                    let contentType = converter.extractContentTypeIfPresent(in: response.headerFields)
+                    let body: Operations.GetExpenseDraftsContext.Output.Ok.Body
+                    let chosenContentType = try converter.bestContentType(
+                        received: contentType,
+                        options: [
+                            "application/json"
+                        ]
+                    )
+                    switch chosenContentType {
+                    case "application/json":
+                        body = try await converter.getResponseBodyAsJSON(
+                            Components.Schemas.ExpenseDraftContextResponse.self,
+                            from: responseBody,
+                            transforming: { value in
+                                .json(value)
+                            }
+                        )
+                    default:
+                        preconditionFailure("bestContentType chose an invalid content type.")
+                    }
+                    return .ok(.init(body: body))
+                case 401:
+                    return .unauthorized(.init())
+                default:
+                    return .undocumented(
+                        statusCode: response.status.code,
+                        .init(
+                            headerFields: response.headerFields,
+                            body: responseBody
+                        )
+                    )
+                }
+            }
+        )
+    }
+    /// Salvar um gasto falado como rascunho, para revisar depois
+    ///
+    /// Rascunho não entra em saldo, relatórios nem listagem de gastos. Os ids enviados precisam ser do usuário; combinações (ex.: cartão de débito no crédito) só são conferidas ao confirmar
+    ///
+    /// - Remark: HTTP `POST /expense-drafts/register`.
+    /// - Remark: Generated from `#/paths//expense-drafts/register/post`.
+    internal func postExpenseDraftsRegister(_ input: Operations.PostExpenseDraftsRegister.Input) async throws -> Operations.PostExpenseDraftsRegister.Output {
+        try await client.send(
+            input: input,
+            forOperation: Operations.PostExpenseDraftsRegister.id,
+            serializer: { input in
+                let path = try converter.renderedPath(
+                    template: "/expense-drafts/register",
+                    parameters: []
+                )
+                var request: HTTPTypes.HTTPRequest = .init(
+                    soar_path: path,
+                    method: .post
+                )
+                suppressMutabilityWarning(&request)
+                converter.setAcceptHeader(
+                    in: &request.headerFields,
+                    contentTypes: input.headers.accept
+                )
+                let body: OpenAPIRuntime.HTTPBody?
+                switch input.body {
+                case let .json(value):
+                    body = try converter.setRequiredRequestBodyAsJSON(
+                        value,
+                        headerFields: &request.headerFields,
+                        contentType: "application/json; charset=utf-8"
+                    )
+                }
+                return (request, body)
+            },
+            deserializer: { response, responseBody in
+                switch response.status.code {
+                case 201:
+                    let contentType = converter.extractContentTypeIfPresent(in: response.headerFields)
+                    let body: Operations.PostExpenseDraftsRegister.Output.Created.Body
+                    let chosenContentType = try converter.bestContentType(
+                        received: contentType,
+                        options: [
+                            "application/json"
+                        ]
+                    )
+                    switch chosenContentType {
+                    case "application/json":
+                        body = try await converter.getResponseBodyAsJSON(
+                            Operations.PostExpenseDraftsRegister.Output.Created.Body.JsonPayload.self,
+                            from: responseBody,
+                            transforming: { value in
+                                .json(value)
+                            }
+                        )
+                    default:
+                        preconditionFailure("bestContentType chose an invalid content type.")
+                    }
+                    return .created(.init(body: body))
+                case 400:
+                    return .badRequest(.init())
+                case 401:
+                    return .unauthorized(.init())
+                case 403:
+                    return .forbidden(.init())
+                case 404:
+                    return .notFound(.init())
+                case 422:
+                    return .unprocessableContent(.init())
+                default:
+                    return .undocumented(
+                        statusCode: response.status.code,
+                        .init(
+                            headerFields: response.headerFields,
+                            body: responseBody
+                        )
+                    )
+                }
+            }
+        )
+    }
+    /// Rascunhos do usuário logado, mais recentes primeiro
+    ///
+    /// - Remark: HTTP `GET /expense-drafts/user-drafts`.
+    /// - Remark: Generated from `#/paths//expense-drafts/user-drafts/get`.
+    internal func getExpenseDraftsUserDrafts(_ input: Operations.GetExpenseDraftsUserDrafts.Input) async throws -> Operations.GetExpenseDraftsUserDrafts.Output {
+        try await client.send(
+            input: input,
+            forOperation: Operations.GetExpenseDraftsUserDrafts.id,
+            serializer: { input in
+                let path = try converter.renderedPath(
+                    template: "/expense-drafts/user-drafts",
+                    parameters: []
+                )
+                var request: HTTPTypes.HTTPRequest = .init(
+                    soar_path: path,
+                    method: .get
+                )
+                suppressMutabilityWarning(&request)
+                converter.setAcceptHeader(
+                    in: &request.headerFields,
+                    contentTypes: input.headers.accept
+                )
+                return (request, nil)
+            },
+            deserializer: { response, responseBody in
+                switch response.status.code {
+                case 200:
+                    let contentType = converter.extractContentTypeIfPresent(in: response.headerFields)
+                    let body: Operations.GetExpenseDraftsUserDrafts.Output.Ok.Body
+                    let chosenContentType = try converter.bestContentType(
+                        received: contentType,
+                        options: [
+                            "application/json"
+                        ]
+                    )
+                    switch chosenContentType {
+                    case "application/json":
+                        body = try await converter.getResponseBodyAsJSON(
+                            Operations.GetExpenseDraftsUserDrafts.Output.Ok.Body.JsonPayload.self,
+                            from: responseBody,
+                            transforming: { value in
+                                .json(value)
+                            }
+                        )
+                    default:
+                        preconditionFailure("bestContentType chose an invalid content type.")
+                    }
+                    return .ok(.init(body: body))
+                case 401:
+                    return .unauthorized(.init())
+                default:
+                    return .undocumented(
+                        statusCode: response.status.code,
+                        .init(
+                            headerFields: response.headerFields,
+                            body: responseBody
+                        )
+                    )
+                }
+            }
+        )
+    }
+    /// Transformar o rascunho em gasto
+    ///
+    /// Mesmas regras de /expenses/register. O gasto é criado e o rascunho apagado na mesma transação. Se faltar algo, responde 400 e o rascunho continua lá
+    ///
+    /// - Remark: HTTP `POST /expense-drafts/confirm`.
+    /// - Remark: Generated from `#/paths//expense-drafts/confirm/post`.
+    internal func postExpenseDraftsConfirm(_ input: Operations.PostExpenseDraftsConfirm.Input) async throws -> Operations.PostExpenseDraftsConfirm.Output {
+        try await client.send(
+            input: input,
+            forOperation: Operations.PostExpenseDraftsConfirm.id,
+            serializer: { input in
+                let path = try converter.renderedPath(
+                    template: "/expense-drafts/confirm",
+                    parameters: []
+                )
+                var request: HTTPTypes.HTTPRequest = .init(
+                    soar_path: path,
+                    method: .post
+                )
+                suppressMutabilityWarning(&request)
+                let body: OpenAPIRuntime.HTTPBody?
+                switch input.body {
+                case let .json(value):
+                    body = try converter.setRequiredRequestBodyAsJSON(
+                        value,
+                        headerFields: &request.headerFields,
+                        contentType: "application/json; charset=utf-8"
+                    )
+                }
+                return (request, body)
+            },
+            deserializer: { response, responseBody in
+                switch response.status.code {
+                case 201:
+                    return .created(.init())
+                case 400:
+                    return .badRequest(.init())
+                case 401:
+                    return .unauthorized(.init())
+                case 403:
+                    return .forbidden(.init())
+                case 404:
+                    return .notFound(.init())
+                case 422:
+                    return .unprocessableContent(.init())
+                default:
+                    return .undocumented(
+                        statusCode: response.status.code,
+                        .init(
+                            headerFields: response.headerFields,
+                            body: responseBody
+                        )
+                    )
+                }
+            }
+        )
+    }
+    /// Descartar um rascunho
+    ///
+    /// - Remark: HTTP `DELETE /expense-drafts/delete`.
+    /// - Remark: Generated from `#/paths//expense-drafts/delete/delete`.
+    internal func deleteExpenseDraftsDelete(_ input: Operations.DeleteExpenseDraftsDelete.Input) async throws -> Operations.DeleteExpenseDraftsDelete.Output {
+        try await client.send(
+            input: input,
+            forOperation: Operations.DeleteExpenseDraftsDelete.id,
+            serializer: { input in
+                let path = try converter.renderedPath(
+                    template: "/expense-drafts/delete",
+                    parameters: []
+                )
+                var request: HTTPTypes.HTTPRequest = .init(
+                    soar_path: path,
+                    method: .delete
+                )
+                suppressMutabilityWarning(&request)
+                let body: OpenAPIRuntime.HTTPBody?
+                switch input.body {
+                case let .json(value):
+                    body = try converter.setRequiredRequestBodyAsJSON(
+                        value,
+                        headerFields: &request.headerFields,
+                        contentType: "application/json; charset=utf-8"
+                    )
+                }
+                return (request, body)
+            },
+            deserializer: { response, responseBody in
+                switch response.status.code {
+                case 200:
+                    return .ok(.init())
+                case 400:
+                    return .badRequest(.init())
+                case 401:
+                    return .unauthorized(.init())
+                case 403:
+                    return .forbidden(.init())
+                case 404:
+                    return .notFound(.init())
                 default:
                     return .undocumented(
                         statusCode: response.status.code,
