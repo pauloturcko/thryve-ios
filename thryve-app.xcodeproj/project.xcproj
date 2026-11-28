@@ -5,7 +5,7 @@
     "Release",
   ],
   "localizations": {
-    "development": "en",
+    "development": "pt-BR",
     "supported": [
       "Base",
     ],
@@ -62,8 +62,10 @@
         "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
         "CODE_SIGN_STYLE": "Automatic",
         "CURRENT_PROJECT_VERSION": "1",
+        "DEVELOPMENT_TEAM": "7R5PY25YL9",
         "ENABLE_PREVIEWS": "YES",
         "GENERATE_INFOPLIST_FILE": "YES",
+        "INFOPLIST_FILE": "Info.plist",
         "INFOPLIST_KEY_CFBundleDisplayName": "Thryve",
         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation": "YES",
         "INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents": "YES",
