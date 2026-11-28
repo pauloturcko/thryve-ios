@@ -13,6 +13,15 @@ struct ThryveShortcuts: AppShortcutsProvider {
                 "Novo gasto no \(.applicationName)",
             ],
             shortTitle: "Registrar gasto",
+            systemImageName: "text.bubble.fill"
+        )
+        AppShortcut(
+            intent: RecordExpenseIntent(),
+            phrases: [
+                "Gravar gasto no \(.applicationName)",
+                "Abrir gravação no \(.applicationName)",
+            ],
+            shortTitle: "Gravar gasto",
             systemImageName: "mic.fill"
         )
     }

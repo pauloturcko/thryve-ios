@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>INAlternativeAppNames</key>
 	<array>
 		<dict>
@@ -23,5 +25,9 @@
 			<string>trívi</string>
 		</dict>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>O Thryve usa o microfone para você falar o gasto. O áudio é transcrito no próprio iPhone.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>O Thryve transforma o que você fala em texto, no próprio iPhone, para registrar o gasto.</string>
 </dict>
 </plist>
