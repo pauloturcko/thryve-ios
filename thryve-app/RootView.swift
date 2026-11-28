@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(SessionStore.self) private var session
+    @AppStorage(AppTheme.storageKey) private var theme = AppTheme.dark
 
     var body: some View {
         Group {
@@ -26,6 +27,7 @@ struct RootView: View {
                 }
             }
         }
+        .preferredColorScheme(theme.colorScheme)
         .task { await session.restore() }
     }
 }
